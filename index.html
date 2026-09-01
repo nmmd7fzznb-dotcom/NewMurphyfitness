@@ -229,16 +229,16 @@
     white-space:nowrap;
   }
   .set-row{
-    display:grid; grid-template-columns:20px 1fr 1fr 1fr 32px; gap:6px;
+    display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px;
     align-items:center;
-    padding:8px 10px;
+    padding:8px 13px;
     border-bottom:1px solid #111;
   }
   .set-row:last-child{border-bottom:none;}
   .set-row .setno{
     font-family:'Oswald',sans-serif; color:var(--muted); font-size:13px; text-align:center;
   }
-  .set-row input[type=number]{padding:7px 4px; font-size:13px; text-align:center;}
+  .set-row input[type=number]{padding:7px 6px; font-size:13.5px;}
   .set-row .chk-wrap{display:flex; justify-content:center;}
   .set-row input[type=checkbox]{
     width:22px; height:22px; accent-color:var(--yellow); cursor:pointer;
@@ -246,9 +246,8 @@
   .set-row.done{background:rgba(242,194,48,0.06);}
   .set-row.done input[type=number]{border-color:var(--yellow-dim);}
   .unit-lbl{font-size:10px; color:var(--muted); text-align:center; margin-top:2px;}
-  .grid-lbl{display:grid; grid-template-columns:20px 1fr 1fr 1fr 32px; gap:6px; padding:0 10px; margin-bottom:2px;}
-  .grid-lbl span{font-size:10px; color:var(--muted); text-align:center;}
-  .day-title{font-size:14px; font-weight:900; color:var(--yellow); margin:2px 0 12px;}
+  .grid-lbl{display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px; padding:0 13px; margin-bottom:2px;}
+  .grid-lbl span{font-size:10.5px; color:var(--muted); text-align:center;}
 
   .hist-block{margin-bottom:8px; border:1px solid var(--border); border-radius:8px; background:var(--panel);}
   .hist-block summary{
@@ -383,9 +382,9 @@
     <section class="tab" id="tab-training">
 
       <div class="daytabs">
-        <div class="daytab active" data-day="day1" onclick="switchDay('day1')">Day 1</div>
-        <div class="daytab" data-day="day2" onclick="switchDay('day2')">Day 2</div>
-        <div class="daytab" data-day="day3" onclick="switchDay('day3')">Day 3</div>
+        <div class="daytab active" data-day="back" onclick="switchDay('back')">背日</div>
+        <div class="daytab" data-day="leg" onclick="switchDay('leg')">腿日</div>
+        <div class="daytab" data-day="chest" onclick="switchDay('chest')">胸+小肌群</div>
       </div>
 
       <div id="trainingContainer"></div>
@@ -588,49 +587,43 @@ function deleteBodyLog(date){
 /* =========================================================
    TAB 2：訓練菜單
 ========================================================= */
-const DAY_KEYS = ['day1','day2','day3'];
 const EXERCISES = {
-  day1:[
-    {name:'輔助引體向上', sets:3, reps:'6-10', rir:'1-2'},
-    {name:'X型下拉', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'滑輪坐姿划船', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'啞鈴肩推', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'側平舉', sets:4, reps:'12-20', rir:'1-2'},
-    {name:'二頭彎舉', sets:3, reps:'8-12', rir:'1-2'},
+  back:[
+    {name:'滑輪下拉', sets:4, reps:'8-10'},
+    {name:'X型下拉', sets:3, reps:'10-12'},
+    {name:'滑輪坐姿划船', sets:3, reps:'10-12'},
+    {name:'器械上斜下拉', sets:3, reps:'10-12'},
+    {name:'器械水平划船', sets:3, reps:'10-12'},
+    {name:'輔助引體向上', sets:3, reps:'6-10'},
+    {name:'器械槓片划船', sets:3, reps:'10-12'},
   ],
-  day2:[
-    {name:'羅馬尼亞硬舉', sets:3, reps:'8-10', rir:'2'},
-    {name:'保加利亞分腿蹲', sets:3, reps:'8-12(單側)', rir:'1-2'},
-    {name:'高腳杯深蹲', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'槓鈴臥推', sets:4, reps:'6-10', rir:'1-2'},
-    {name:'啞鈴上斜臥推', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'側平舉', sets:3, reps:'12-20', rir:'1-2'},
+  leg:[
+    {name:'硬舉', sets:4, reps:'6-8'},
+    {name:'保加利亞分腿蹲', sets:3, reps:'10-12(單腳)'},
+    {name:'高腳杯深蹲／槓鈴深蹲', sets:4, reps:'8-10'},
+    {name:'器械大腿伸屈', sets:3, reps:'12-15'},
+    {name:'相撲啞鈴深蹲', sets:3, reps:'10-12'},
   ],
-  day3:[
-    {name:'啞鈴上斜臥推', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'器械水平划船', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'滑輪下拉', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'啞鈴肩推', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'側平舉', sets:4, reps:'12-20', rir:'1-2'},
-    {name:'二頭彎舉', sets:3, reps:'8-12', rir:'1-2'},
-    {name:'三頭過頭伸展', sets:3, reps:'10-15', rir:'1-2'},
+  chest:[
+    {name:'槓鈴臥推', sets:4, reps:'6-8'},
+    {name:'啞鈴上斜臥推', sets:3, reps:'8-10'},
+    {name:'啞鈴肩推', sets:3, reps:'10-12'},
+    {name:'側平舉', sets:3, reps:'15'},
+    {name:'二頭彎舉', sets:3, reps:'12-15'},
+    {name:'三頭平槓過頭延伸', sets:3, reps:'12-15'},
   ]
 };
-const DAY_LABEL = {
-  day1:'Day 1｜背＋肩＋二頭',
-  day2:'Day 2｜腿＋胸＋肩',
-  day3:'Day 3｜胸＋背＋肩＋手臂'
-};
-const DRAFT_KEY = 'ironlog_draft_v2';
+const DAY_LABEL = {back:'背日', leg:'腿日', chest:'胸日+小肌群'};
+const DRAFT_KEY = 'ironlog_draft_v1';
 const WORKOUT_KEY = 'ironlog_workout_v1';
-let currentDay = 'day1';
+let currentDay = 'back';
 
 function emptyDraftFor(day){
-  return EXERCISES[day].map(ex => Array.from({length:ex.sets}, ()=>({w:'',r:'',rir:'',done:false})));
+  return EXERCISES[day].map(ex => Array.from({length:ex.sets}, ()=>({w:'',r:'',done:false})));
 }
 function getDraft(){
   let d = loadLS(DRAFT_KEY, {});
-  DAY_KEYS.forEach(day=>{
+  ['back','leg','chest'].forEach(day=>{
     if(!d[day]) d[day] = emptyDraftFor(day);
   });
   return d;
@@ -645,9 +638,8 @@ function switchDay(day){
 
 function renderTrainingContainer(){
   const container = document.getElementById('trainingContainer');
-  container.innerHTML = DAY_KEYS.map(day=>{
+  container.innerHTML = ['back','leg','chest'].map(day=>{
     return `<div class="dayview ${day===currentDay?'active':''}" id="dv-${day}">
-      <div class="day-title">${DAY_LABEL[day]}</div>
       ${exercisesHtml(day)}
       <div class="btn-row" style="margin:14px 0;">
         <button class="btn btn-primary" onclick="finishWorkout('${day}')">完成本次訓練，存入紀錄</button>
@@ -655,7 +647,7 @@ function renderTrainingContainer(){
       <div class="btn-row" style="margin-bottom:18px;">
         <button class="btn btn-ghost" onclick="clearDay('${day}')">清空本頁重填</button>
       </div>
-      <div class="section-title"><div class="bar"></div><h2>本日歷史紀錄</h2></div>
+      <div class="section-title"><div class="bar"></div><h2>${DAY_LABEL[day]}歷史紀錄</h2></div>
       <div id="hist-${day}"></div>
     </div>`;
   }).join('');
@@ -670,12 +662,10 @@ function exercisesHtml(day){
       const s = draft[exi][si];
       return `<div class="set-row ${s.done?'done':''}" id="row-${day}-${exi}-${si}">
         <div class="setno">${si+1}</div>
-        <input type="number" placeholder="kg" step="0.5" value="${s.w}"
+        <input type="number" placeholder="重量kg" step="0.5" value="${s.w}"
           onchange="updateSet('${day}',${exi},${si},'w',this.value)">
         <input type="number" placeholder="次數" value="${s.r}"
           onchange="updateSet('${day}',${exi},${si},'r',this.value)">
-        <input type="number" placeholder="RIR" step="0.5" value="${s.rir}"
-          onchange="updateSet('${day}',${exi},${si},'rir',this.value)">
         <div class="chk-wrap">
           <input type="checkbox" ${s.done?'checked':''} onchange="toggleSet('${day}',${exi},${si},this.checked)">
         </div>
@@ -684,9 +674,9 @@ function exercisesHtml(day){
     return `<div class="ex-card">
       <div class="ex-head">
         <div class="name">${ex.name}</div>
-        <div class="suggest">${ex.sets}組×${ex.reps}下・RIR${ex.rir}</div>
+        <div class="suggest">建議 ${ex.sets}組 × ${ex.reps}下</div>
       </div>
-      <div class="grid-lbl"><span></span><span>重量</span><span>次數</span><span>RIR</span><span>完成</span></div>
+      <div class="grid-lbl"><span></span><span>重量</span><span>次數</span><span>完成</span></div>
       ${rows}
     </div>`;
   }).join('');
@@ -733,7 +723,7 @@ function finishWorkout(day){
     day: day,
     exercises: EXERCISES[day].map((ex, exi)=>({
       name: ex.name,
-      sets: draft[exi].filter(s=>s.done).map(s=>({w:s.w||'-', r:s.r||'-', rir:s.rir||'-'}))
+      sets: draft[exi].filter(s=>s.done).map(s=>({w:s.w||'-', r:s.r||'-'}))
     })).filter(e=>e.sets.length>0)
   };
   let history = loadLS(WORKOUT_KEY, []);
@@ -744,7 +734,7 @@ function finishWorkout(day){
 }
 
 function renderAllWorkoutHistory(){
-  DAY_KEYS.forEach(day=>{
+  ['back','leg','chest'].forEach(day=>{
     const el = document.getElementById('hist-'+day);
     if(!el) return;
     const history = loadLS(WORKOUT_KEY, []).filter(h=>h.day===day).sort((a,b)=>b.id-a.id);
@@ -754,7 +744,7 @@ function renderAllWorkoutHistory(){
     }
     el.innerHTML = history.map(h=>{
       const lines = h.exercises.map(e=>{
-        const setsTxt = e.sets.map(s=>`${s.w}kg×${s.r}(RIR${s.rir})`).join('、');
+        const setsTxt = e.sets.map(s=>`${s.w}kg×${s.r}`).join('、');
         return `<div class="hist-ex-line"><b>${e.name}</b>：${setsTxt}</div>`;
       }).join('');
       return `<details class="hist-block">

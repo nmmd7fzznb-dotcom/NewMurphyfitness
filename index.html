@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訓練日誌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --panel:#151515;
+    --panel-2:#1c1c1c;
+    --border:#2b2b2b;
+    --steel:#3a3a3a;
+    --yellow:#f2c230;
+    --yellow-dim:#c9a227;
+    --red:#d62828;
+    --red-dim:#9c1f1f;
+    --white:#f2f2f0;
+    --muted:#8f8f8a;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Noto Sans TC', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:'Oswald',sans-serif;}
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    padding-bottom:84px;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+  }
+  @media (min-width:520px){
+    body{background:#050505;}
+    .app{margin-top:0; box-shadow:0 0 60px rgba(0,0,0,.6);}
+  }
+
+  /* ---------- Header ---------- */
+  .hazard{
+    height:7px;
+    background:repeating-linear-gradient(135deg, var(--yellow) 0 14px, #111 14px 28px);
+  }
+  .topbar{
+    background:linear-gradient(180deg,#141414,#0d0d0d);
+    border-bottom:1px solid var(--border);
+    padding:16px 18px 14px;
+  }
+  .topbar h1{
+    margin:0;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:900;
+    font-size:22px;
+    letter-spacing:1px;
+    color:var(--white);
+  }
+  .topbar h1 span{color:var(--yellow);}
+  .topbar p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:12.5px;
+  }
+
+  /* ---------- Tabs content ---------- */
+  main{padding:16px 14px 8px;}
+  .tab{display:none;}
+  .tab.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .section-title{
+    display:flex; align-items:baseline; gap:8px;
+    margin:22px 0 10px;
+  }
+  .section-title:first-child{margin-top:4px;}
+  .section-title h2{
+    font-size:16px; margin:0; font-weight:900; color:var(--white);
+  }
+  .section-title .bar{width:4px;height:16px;background:var(--yellow);border-radius:2px;}
+
+  /* ---------- Cards / panels ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .hero{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+  }
+  .hero .stat{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-top:3px solid var(--yellow);
+    border-radius:8px;
+    padding:12px 8px;
+    text-align:center;
+  }
+  .hero .stat .v{
+    font-family:'Oswald',sans-serif;
+    font-size:26px;
+    font-weight:600;
+    color:var(--white);
+    line-height:1.1;
+  }
+  .hero .stat .v small{font-size:13px; color:var(--muted); font-weight:400;}
+  .hero .stat .l{font-size:11.5px; color:var(--muted); margin-top:4px;}
+  .hero .stat .d{font-size:11px; margin-top:3px; font-family:'Oswald',sans-serif;}
+  .d.up{color:var(--yellow);}
+  .d.down{color:var(--red);}
+  .d.flat{color:var(--muted);}
+
+  /* forms */
+  label.field{display:block; margin-bottom:10px;}
+  label.field span{display:block; font-size:12px; color:var(--muted); margin-bottom:5px;}
+  input[type=number],input[type=date],input[type=text]{
+    width:100%;
+    background:#0f0f0f;
+    border:1px solid var(--steel);
+    color:var(--white);
+    padding:9px 10px;
+    border-radius:6px;
+    font-size:14px;
+    font-family:'Oswald',sans-serif;
+  }
+  input:focus{outline:2px solid var(--yellow); outline-offset:1px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    gap:6px;
+    border:none; cursor:pointer;
+    font-family:'Noto Sans TC',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding:11px 16px;
+    border-radius:7px;
+    width:100%;
+  }
+  .btn-primary{background:var(--yellow); color:#161200;}
+  .btn-primary:active{background:var(--yellow-dim);}
+  .btn-ghost{background:transparent; border:1px solid var(--steel); color:var(--white);}
+  .btn-danger{background:transparent; border:1px solid var(--red-dim); color:var(--red);}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row .btn{flex:1;}
+
+  /* history list */
+  .hist-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+    gap:8px;
+  }
+  .hist-row:last-child{border-bottom:none;}
+  .hist-date{font-size:12px; color:var(--muted); min-width:70px; font-family:'Oswald',sans-serif;}
+  .hist-vals{display:flex; gap:10px; flex:1; flex-wrap:wrap;}
+  .hist-vals .item{font-size:13px; font-family:'Oswald',sans-serif;}
+  .hist-vals .item b{font-weight:600;}
+  .hist-vals .item span{color:var(--muted); font-size:10.5px; font-family:'Noto Sans TC',sans-serif;}
+  .del-btn{
+    background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;
+  }
+  .del-btn:hover{color:var(--red);}
+  .empty-note{color:var(--muted); font-size:13px; padding:8px 0;}
+
+  /* ---------- Bottom nav ---------- */
+  .bottomnav{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:480px; margin:0 auto;
+    background:#0d0d0d;
+    border-top:1px solid var(--border);
+    display:flex;
+    z-index:20;
+  }
+  .navbtn{
+    flex:1; background:none; border:none; color:var(--muted);
+    padding:10px 4px 12px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    font-family:'Noto Sans TC',sans-serif; font-size:11px; font-weight:700;
+  }
+  .navbtn svg{width:20px;height:20px;stroke:var(--muted); fill:none; stroke-width:1.8;}
+  .navbtn.active{color:var(--yellow);}
+  .navbtn.active svg{stroke:var(--yellow);}
+  .navbtn.active{position:relative;}
+  .navbtn.active::before{
+    content:"";
+    position:absolute; top:0; left:20%; right:20%; height:2px;
+    background:var(--yellow);
+  }
+
+  /* ---------- Training tab ---------- */
+  .daytabs{display:flex; gap:8px; margin-bottom:14px;}
+  .daytab{
+    flex:1; text-align:center; padding:9px 4px;
+    border:1px solid var(--steel); border-radius:7px;
+    background:var(--panel); color:var(--muted);
+    font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .daytab.active{background:var(--yellow); color:#161200; border-color:var(--yellow);}
+
+  .dayview{display:none;}
+  .dayview.active{display:block;}
+
+  .ex-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:10px; overflow:hidden;
+  }
+  .ex-head{
+    padding:11px 13px 9px;
+    border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+    gap:8px;
+  }
+  .ex-head .name{font-weight:700; font-size:14.5px;}
+  .ex-head .suggest{
+    font-family:'Oswald',sans-serif; font-size:12px; color:var(--yellow);
+    white-space:nowrap;
+  }
+  .set-row{
+    display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px;
+    align-items:center;
+    padding:8px 13px;
+    border-bottom:1px solid #111;
+  }
+  .set-row:last-child{border-bottom:none;}
+  .set-row .setno{
+    font-family:'Oswald',sans-serif; color:var(--muted); font-size:13px; text-align:center;
+  }
+  .set-row input[type=number]{padding:7px 6px; font-size:13.5px;}
+  .set-row .chk-wrap{display:flex; justify-content:center;}
+  .set-row input[type=checkbox]{
+    width:22px; height:22px; accent-color:var(--yellow); cursor:pointer;
+  }
+  .set-row.done{background:rgba(242,194,48,0.06);}
+  .set-row.done input[type=number]{border-color:var(--yellow-dim);}
+  .unit-lbl{font-size:10px; color:var(--muted); text-align:center; margin-top:2px;}
+  .grid-lbl{display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px; padding:0 13px; margin-bottom:2px;}
+  .grid-lbl span{font-size:10.5px; color:var(--muted); text-align:center;}
+
+  .hist-block{margin-bottom:8px; border:1px solid var(--border); border-radius:8px; background:var(--panel);}
+  .hist-block summary{
+    padding:10px 12px; cursor:pointer; font-size:13px; font-weight:700;
+    display:flex; justify-content:space-between; list-style:none;
+  }
+  .hist-block summary::-webkit-details-marker{display:none;}
+  .hist-block summary .arr{color:var(--muted); font-weight:400;}
+  .hist-block .hist-body{padding:0 12px 10px;}
+  .hist-ex-line{font-size:12.5px; color:var(--muted); padding:4px 0; border-top:1px solid #111;}
+  .hist-ex-line b{color:var(--white); font-weight:600;}
+
+  /* rest timer */
+  .rest-timer{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:480px; margin:0 auto;
+    background:#111;
+    border-top:2px solid var(--red);
+    transform:translateY(120%);
+    transition:transform .3s ease;
+    z-index:30;
+    padding:14px 16px 16px;
+  }
+  .rest-timer.show{transform:translateY(0);}
+  .rest-timer .rt-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .rest-timer .rt-label{font-size:12.5px; color:var(--muted); font-weight:700;}
+  .rest-timer .rt-count{
+    font-family:'Oswald',sans-serif; font-size:38px; text-align:center; color:var(--white);
+    line-height:1;
+  }
+  .rest-timer .rt-count.warn{color:var(--red);}
+  .rt-bar{height:5px; background:#2a2a2a; border-radius:3px; overflow:hidden; margin:10px 0 12px;}
+  .rt-bar-fill{height:100%; background:var(--red); width:100%; transition:width 1s linear;}
+  .rt-btns{display:flex; gap:8px;}
+  .rt-btns button{
+    flex:1; background:#1c1c1c; border:1px solid var(--steel); color:var(--white);
+    padding:8px; border-radius:6px; font-size:12.5px; cursor:pointer; font-weight:700;
+  }
+  .rt-btns button.stop{border-color:var(--red-dim); color:var(--red);}
+
+  /* ---------- Nutrition tab ---------- */
+  .pillrow{display:flex; gap:8px; margin-bottom:14px;}
+  .pill{
+    flex:1; text-align:center; padding:9px; border-radius:20px;
+    border:1px solid var(--steel); color:var(--muted); font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .pill.active{background:var(--red); border-color:var(--red); color:var(--white);}
+
+  .kcal-hero{
+    text-align:center; padding:20px 10px; background:var(--panel);
+    border:1px solid var(--border); border-radius:var(--radius); margin-bottom:14px;
+    border-top:3px solid var(--red);
+  }
+  .kcal-hero .big{font-family:'Oswald',sans-serif; font-size:44px; color:var(--white); font-weight:600;}
+  .kcal-hero .big span{font-size:16px; color:var(--muted);}
+  .kcal-hero .sub{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  .macro-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .macro-card .mc-top{display:flex; justify-content:space-between; align-items:center;}
+  .macro-card .mc-name{font-weight:700; font-size:14px;}
+  .macro-card .mc-serv{font-family:'Oswald',sans-serif; color:var(--yellow); font-size:15px;}
+  .macro-card .mc-kcal{font-size:11.5px; color:var(--muted); margin-top:3px;}
+  details.food-ex{margin-top:8px;}
+  details.food-ex summary{
+    font-size:12px; color:var(--muted); cursor:pointer; list-style:none;
+  }
+  details.food-ex summary::-webkit-details-marker{display:none;}
+  details.food-ex summary::before{content:"▸ ";}
+  details.food-ex[open] summary::before{content:"▾ ";}
+  .food-list{margin:8px 0 0; padding-left:0; list-style:none;}
+  .food-list li{
+    font-size:12.5px; color:var(--white); padding:5px 0 5px 10px;
+    border-left:2px solid var(--steel); margin-bottom:4px;
+  }
+  .food-list li span{color:var(--muted); font-size:11px;}
+
+  .note{
+    font-size:12px; color:var(--muted); line-height:1.6;
+    background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
+    padding:12px 14px; margin-top:6px;
+  }
+  .note b{color:var(--white);}
+
+  .toast{
+    position:fixed; left:50%; bottom:100px; transform:translate(-50%,10px);
+    background:var(--yellow); color:#161200; font-weight:700; font-size:13px;
+    padding:9px 18px; border-radius:20px; opacity:0; pointer-events:none;
+    transition:all .25s ease; z-index:50; max-width:480px;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hazard"></div>
+  <header class="topbar">
+    <h1>訓練<span>日誌</span></h1>
+    <p>身高 167cm・增肌減脂進行中</p>
+  </header>
+
+  <main>
+
+    <!-- ============ TAB 1: 身體數據 ============ -->
+    <section class="tab active" id="tab-body">
+
+      <div class="section-title"><div class="bar"></div><h2>本週身體數據</h2></div>
+      <div class="panel">
+        <div class="hero" id="bodyHero"></div>
+      </div>
+
+      <div class="section-title"><div class="bar"></div><h2>新增紀錄</h2></div>
+      <div class="panel">
+        <label class="field"><span>日期</span><input type="date" id="inDate"></label>
+        <div class="row2">
+          <label class="field"><span>體重 (kg)</span><input type="number" step="0.1" id="inWeight" placeholder="65.0"></label>
+          <label class="field"><span>體脂率 (%)</span><input type="number" step="0.1" id="inFat" placeholder="33.3"></label>
+          <label class="field"><span>骨骼肌 (kg)</span><input type="number" step="0.1" id="inMuscle" placeholder="22.9"></label>
+        </div>
+        <button class="btn btn-primary" onclick="saveBodyLog()">儲存本次紀錄</button>
+      </div>
+
+      <div class="section-title"><div class="bar"></div><h2>歷史紀錄</h2></div>
+      <div class="panel" id="bodyHistory"></div>
+
+    </section>
+
+    <!-- ============ TAB 2: 訓練菜單 ============ -->
+    <section class="tab" id="tab-training">
+
+      <div class="daytabs">
+        <div class="daytab active" data-day="back" onclick="switchDay('back')">背日</div>
+        <div class="daytab" data-day="leg" onclick="switchDay('leg')">腿日</div>
+        <div class="daytab" data-day="chest" onclick="switchDay('chest')">胸+小肌群</div>
+      </div>
+
+      <div id="trainingContainer"></div>
+
+    </section>
+
+    <!-- ============ TAB 3: 營養計劃 ============ -->
+    <section class="tab" id="tab-nutrition">
+
+      <div class="pillrow">
+        <div class="pill active" data-mode="train" onclick="switchNutri('train')">訓練日</div>
+        <div class="pill" data-mode="rest" onclick="switchNutri('rest')">休息日</div>
+      </div>
+
+      <div class="kcal-hero">
+        <div class="big num" id="nutriKcal">2285 <span>kcal</span></div>
+        <div class="sub">目標：增肌減脂・依衛福部食物代換份量估算</div>
+      </div>
+
+      <div id="nutriMacros"></div>
+
+      <div class="note" id="nutriNote"></div>
+
+    </section>
+
+  </main>
+
+  <nav class="bottomnav">
+    <button class="navbtn active" data-tab="tab-body" onclick="switchTab('tab-body')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 9h18M9 21V9"></path></svg>
+      身體數據
+    </button>
+    <button class="navbtn" data-tab="tab-training" onclick="switchTab('tab-training')">
+      <svg viewBox="0 0 24 24"><path d="M4 8v8M2 10v4M22 10v4M20 8v8M7 12h10"></path></svg>
+      訓練菜單
+    </button>
+    <button class="navbtn" data-tab="tab-nutrition" onclick="switchTab('tab-nutrition')">
+      <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0016 0M4 12h16M12 3v3"></path></svg>
+      營養計劃
+    </button>
+  </nav>
+
+  <div class="rest-timer" id="restTimer">
+    <div class="rt-top">
+      <span class="rt-label">組間休息</span>
+      <span class="rt-label" id="rtStatus">READY</span>
+    </div>
+    <div class="rt-count num" id="rtCount">90</div>
+    <div class="rt-bar"><div class="rt-bar-fill" id="rtFill"></div></div>
+    <div class="rt-btns">
+      <button onclick="adjustRest(-15)">-15s</button>
+      <button onclick="adjustRest(15)">+15s</button>
+      <button class="stop" onclick="stopRest()">結束</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+/* =========================================================
+   共用工具
+========================================================= */
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fmtDate(s){
+  const [y,m,d] = s.split('-');
+  return y+'/'+m+'/'+d;
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+function loadLS(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function saveLS(key, val){
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+/* =========================================================
+   TAB / NAV 切換
+========================================================= */
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab === id);
+  });
+}
+
+/* =========================================================
+   TAB 1：身體數據
+========================================================= */
+const BODY_KEY = 'ironlog_body_v1';
+
+function seedBodyIfEmpty(){
+  let logs = loadLS(BODY_KEY, null);
+  if(!logs || logs.length===0){
+    logs = [{date: todayStr(), weight:65, fat:33.3, muscle:22.9}];
+    saveLS(BODY_KEY, logs);
+  }
+  return logs;
+}
+
+function getBodyLogsSorted(){
+  const logs = loadLS(BODY_KEY, []);
+  return logs.slice().sort((a,b)=> b.date.localeCompare(a.date));
+}
+
+function renderBody(){
+  const logs = getBodyLogsSorted();
+  const hero = document.getElementById('bodyHero');
+  const latest = logs[0];
+  const prev = logs[1];
+
+  function deltaHtml(cur, prevVal, goodDir){
+    if(prevVal===undefined) return '<div class="d flat">首筆紀錄</div>';
+    const diff = +(cur - prevVal).toFixed(1);
+    if(diff===0) return '<div class="d flat">持平</div>';
+    const isGood = goodDir==='down' ? diff<0 : diff>0;
+    const arrow = diff>0 ? '▲' : '▼';
+    return `<div class="d ${isGood?'up':'down'}">${arrow} ${Math.abs(diff)}</div>`;
+  }
+
+  if(latest){
+    hero.innerHTML = `
+      <div class="stat">
+        <div class="v">${latest.weight}<small>kg</small></div>
+        <div class="l">體重</div>
+        ${deltaHtml(latest.weight, prev?prev.weight:undefined,'down')}
+      </div>
+      <div class="stat">
+        <div class="v">${latest.fat}<small>%</small></div>
+        <div class="l">體脂率</div>
+        ${deltaHtml(latest.fat, prev?prev.fat:undefined,'down')}
+      </div>
+      <div class="stat">
+        <div class="v">${latest.muscle}<small>kg</small></div>
+        <div class="l">骨骼肌</div>
+        ${deltaHtml(latest.muscle, prev?prev.muscle:undefined,'up')}
+      </div>`;
+  }
+
+  const histEl = document.getElementById('bodyHistory');
+  if(logs.length===0){
+    histEl.innerHTML = '<div class="empty-note">尚無紀錄，開始記錄你的第一筆數據吧。</div>';
+    return;
+  }
+  histEl.innerHTML = logs.map((l,i)=>{
+    return `<div class="hist-row">
+      <div class="hist-date">${fmtDate(l.date)}</div>
+      <div class="hist-vals">
+        <div class="item"><b>${l.weight}</b><span> kg</span></div>
+        <div class="item"><b>${l.fat}</b><span> %</span></div>
+        <div class="item"><b>${l.muscle}</b><span> kg肌</span></div>
+      </div>
+      <button class="del-btn" onclick="deleteBodyLog('${l.date}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function saveBodyLog(){
+  const date = document.getElementById('inDate').value || todayStr();
+  const weight = parseFloat(document.getElementById('inWeight').value);
+  const fat = parseFloat(document.getElementById('inFat').value);
+  const muscle = parseFloat(document.getElementById('inMuscle').value);
+
+  if(isNaN(weight) || isNaN(fat) || isNaN(muscle)){
+    showToast('請完整填寫體重／體脂率／骨骼肌');
+    return;
+  }
+  let logs = loadLS(BODY_KEY, []);
+  logs = logs.filter(l=>l.date!==date);
+  logs.push({date, weight, fat, muscle});
+  saveLS(BODY_KEY, logs);
+  document.getElementById('inWeight').value='';
+  document.getElementById('inFat').value='';
+  document.getElementById('inMuscle').value='';
+  renderBody();
+  showToast('已儲存本週數據');
+}
+
+function deleteBodyLog(date){
+  if(!confirm('確定刪除這筆紀錄？')) return;
+  let logs = loadLS(BODY_KEY, []);
+  logs = logs.filter(l=>l.date!==date);
+  saveLS(BODY_KEY, logs);
+  renderBody();
+}
+
+/* =========================================================
+   TAB 2：訓練菜單
+========================================================= */
+const EXERCISES = {
+  back:[
+    {name:'滑輪下拉', sets:4, reps:'8-10'},
+    {name:'X型下拉', sets:3, reps:'10-12'},
+    {name:'滑輪坐姿划船', sets:3, reps:'10-12'},
+    {name:'器械上斜下拉', sets:3, reps:'10-12'},
+    {name:'器械水平划船', sets:3, reps:'10-12'},
+    {name:'輔助引體向上', sets:3, reps:'6-10'},
+    {name:'器械槓片划船', sets:3, reps:'10-12'},
+  ],
+  leg:[
+    {name:'硬舉', sets:4, reps:'6-8'},
+    {name:'保加利亞分腿蹲', sets:3, reps:'10-12(單腳)'},
+    {name:'高腳杯深蹲／槓鈴深蹲', sets:4, reps:'8-10'},
+    {name:'器械大腿伸屈', sets:3, reps:'12-15'},
+    {name:'相撲啞鈴深蹲', sets:3, reps:'10-12'},
+  ],
+  chest:[
+    {name:'槓鈴臥推', sets:4, reps:'6-8'},
+    {name:'啞鈴上斜臥推', sets:3, reps:'8-10'},
+    {name:'啞鈴肩推', sets:3, reps:'10-12'},
+    {name:'側平舉', sets:3, reps:'15'},
+    {name:'二頭彎舉', sets:3, reps:'12-15'},
+    {name:'三頭平槓過頭延伸', sets:3, reps:'12-15'},
+  ]
+};
+const DAY_LABEL = {back:'背日', leg:'腿日', chest:'胸日+小肌群'};
+const DRAFT_KEY = 'ironlog_draft_v1';
+const WORKOUT_KEY = 'ironlog_workout_v1';
+let currentDay = 'back';
+
+function emptyDraftFor(day){
+  return EXERCISES[day].map(ex => Array.from({length:ex.sets}, ()=>({w:'',r:'',done:false})));
+}
+function getDraft(){
+  let d = loadLS(DRAFT_KEY, {});
+  ['back','leg','chest'].forEach(day=>{
+    if(!d[day]) d[day] = emptyDraftFor(day);
+  });
+  return d;
+}
+function saveDraft(d){ saveLS(DRAFT_KEY, d); }
+
+function switchDay(day){
+  currentDay = day;
+  document.querySelectorAll('.daytab').forEach(t=>t.classList.toggle('active', t.dataset.day===day));
+  document.querySelectorAll('.dayview').forEach(v=>v.classList.toggle('active', v.id==='dv-'+day));
+}
+
+function renderTrainingContainer(){
+  const container = document.getElementById('trainingContainer');
+  container.innerHTML = ['back','leg','chest'].map(day=>{
+    return `<div class="dayview ${day===currentDay?'active':''}" id="dv-${day}">
+      ${exercisesHtml(day)}
+      <div class="btn-row" style="margin:14px 0;">
+        <button class="btn btn-primary" onclick="finishWorkout('${day}')">完成本次訓練，存入紀錄</button>
+      </div>
+      <div class="btn-row" style="margin-bottom:18px;">
+        <button class="btn btn-ghost" onclick="clearDay('${day}')">清空本頁重填</button>
+      </div>
+      <div class="section-title"><div class="bar"></div><h2>${DAY_LABEL[day]}歷史紀錄</h2></div>
+      <div id="hist-${day}"></div>
+    </div>`;
+  }).join('');
+  renderAllSetInputs();
+  renderAllWorkoutHistory();
+}
+
+function exercisesHtml(day){
+  const draft = getDraft()[day];
+  return EXERCISES[day].map((ex, exi)=>{
+    const rows = Array.from({length:ex.sets}, (_,si)=>{
+      const s = draft[exi][si];
+      return `<div class="set-row ${s.done?'done':''}" id="row-${day}-${exi}-${si}">
+        <div class="setno">${si+1}</div>
+        <input type="number" placeholder="重量kg" step="0.5" value="${s.w}"
+          onchange="updateSet('${day}',${exi},${si},'w',this.value)">
+        <input type="number" placeholder="次數" value="${s.r}"
+          onchange="updateSet('${day}',${exi},${si},'r',this.value)">
+        <div class="chk-wrap">
+          <input type="checkbox" ${s.done?'checked':''} onchange="toggleSet('${day}',${exi},${si},this.checked)">
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="ex-card">
+      <div class="ex-head">
+        <div class="name">${ex.name}</div>
+        <div class="suggest">建議 ${ex.sets}組 × ${ex.reps}下</div>
+      </div>
+      <div class="grid-lbl"><span></span><span>重量</span><span>次數</span><span>完成</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function renderAllSetInputs(){ /* handled at render time via exercisesHtml */ }
+
+function updateSet(day, exi, si, field, val){
+  const d = getDraft();
+  d[day][exi][si][field] = val;
+  saveDraft(d);
+}
+
+function toggleSet(day, exi, si, checked){
+  const d = getDraft();
+  d[day][exi][si].done = checked;
+  saveDraft(d);
+  const row = document.getElementById(`row-${day}-${exi}-${si}`);
+  if(row) row.classList.toggle('done', checked);
+  if(checked){
+    startRest(90);
+  }
+}
+
+function clearDay(day){
+  if(!confirm('確定清空「'+DAY_LABEL[day]+'」目前輸入的重量與次數？')) return;
+  const d = getDraft();
+  d[day] = emptyDraftFor(day);
+  saveDraft(d);
+  renderTrainingContainer();
+  switchDay(day);
+}
+
+function finishWorkout(day){
+  const draft = getDraft()[day];
+  const hasAny = draft.some(sets => sets.some(s=>s.done));
+  if(!hasAny){
+    showToast('至少完成一組再儲存喔');
+    return;
+  }
+  const record = {
+    id: Date.now(),
+    date: todayStr(),
+    day: day,
+    exercises: EXERCISES[day].map((ex, exi)=>({
+      name: ex.name,
+      sets: draft[exi].filter(s=>s.done).map(s=>({w:s.w||'-', r:s.r||'-'}))
+    })).filter(e=>e.sets.length>0)
+  };
+  let history = loadLS(WORKOUT_KEY, []);
+  history.push(record);
+  saveLS(WORKOUT_KEY, history);
+  renderAllWorkoutHistory();
+  showToast(DAY_LABEL[day]+' 已存入訓練紀錄！');
+}
+
+function renderAllWorkoutHistory(){
+  ['back','leg','chest'].forEach(day=>{
+    const el = document.getElementById('hist-'+day);
+    if(!el) return;
+    const history = loadLS(WORKOUT_KEY, []).filter(h=>h.day===day).sort((a,b)=>b.id-a.id);
+    if(history.length===0){
+      el.innerHTML = '<div class="empty-note">尚無歷史紀錄</div>';
+      return;
+    }
+    el.innerHTML = history.map(h=>{
+      const lines = h.exercises.map(e=>{
+        const setsTxt = e.sets.map(s=>`${s.w}kg×${s.r}`).join('、');
+        return `<div class="hist-ex-line"><b>${e.name}</b>：${setsTxt}</div>`;
+      }).join('');
+      return `<details class="hist-block">
+        <summary>${fmtDate(h.date)} <span class="arr">▾ 查看詳情 / <a href="#" onclick="event.preventDefault();event.stopPropagation();deleteWorkout(${h.id})" style="color:var(--red);">刪除</a></span></summary>
+        <div class="hist-body">${lines}</div>
+      </details>`;
+    }).join('');
+  });
+}
+
+function deleteWorkout(id){
+  if(!confirm('確定刪除這筆訓練紀錄？')) return;
+  let history = loadLS(WORKOUT_KEY, []);
+  history = history.filter(h=>h.id!==id);
+  saveLS(WORKOUT_KEY, history);
+  renderAllWorkoutHistory();
+}
+
+/* ---------- 休息計時器 ---------- */
+let restTimerInterval = null;
+let restRemaining = 90;
+let restTotal = 90;
+
+function startRest(seconds){
+  clearInterval(restTimerInterval);
+  restTotal = seconds;
+  restRemaining = seconds;
+  updateRestUI();
+  document.getElementById('restTimer').classList.add('show');
+  document.getElementById('rtStatus').textContent = '休息中';
+  restTimerInterval = setInterval(()=>{
+    restRemaining--;
+    if(restRemaining<=0){
+      restRemaining = 0;
+      updateRestUI();
+      clearInterval(restTimerInterval);
+      document.getElementById('rtStatus').textContent = '可以開始下一組！';
+      return;
+    }
+    updateRestUI();
+  }, 1000);
+}
+function updateRestUI(){
+  const countEl = document.getElementById('rtCount');
+  countEl.textContent = restRemaining;
+  countEl.classList.toggle('warn', restRemaining<=10);
+  const pct = Math.max(0, (restRemaining/restTotal)*100);
+  document.getElementById('rtFill').style.width = pct+'%';
+}
+function adjustRest(delta){
+  restRemaining = Math.max(0, restRemaining+delta);
+  if(restRemaining > restTotal) restTotal = restRemaining;
+  updateRestUI();
+}
+function stopRest(){
+  clearInterval(restTimerInterval);
+  document.getElementById('restTimer').classList.remove('show');
+}
+
+/* =========================================================
+   TAB 3：營養計劃
+========================================================= */
+const NUTRI = {
+  train:{
+    kcal:2285,
+    items:[
+      {name:'全穀雜糧類（碳水）', serv:'10份', kcalSub:'約700kcal', foods:[
+        ['白飯','1/4碗＝40g，一整碗160g＝4份'],
+        ['地瓜','約55g（半根）'],
+        ['全麥吐司','1片（30g）'],
+        ['燕麥片(乾)','20g'],
+        ['玉米粒','85g']
+      ]},
+      {name:'豆魚蛋肉類（蛋白質）', serv:'17份', kcalSub:'約1275kcal・約119g蛋白質', foods:[
+        ['雞蛋','1顆（55g）'],
+        ['雞胸肉(生)','30g'],
+        ['鮭魚','35g'],
+        ['豬里肌肉','35g'],
+        ['板豆腐','3格（80g）']
+      ]},
+      {name:'蔬菜類', serv:'6-8份', kcalSub:'約175kcal（以7份估算）', foods:[
+        ['花椰菜','100g'],
+        ['菠菜','100g'],
+        ['高麗菜','100g'],
+        ['小黃瓜','100g']
+      ]},
+      {name:'油脂類', serv:'3份', kcalSub:'約135kcal', foods:[
+        ['橄欖油','1茶匙（5g）'],
+        ['酪梨','1/5顆（30g）'],
+        ['腰果','5顆（8g）']
+      ]},
+    ]
+  },
+  rest:{
+    kcal:1855,
+    items:[
+      {name:'全穀雜糧類（碳水）', serv:'6份', kcalSub:'約420kcal', foods:[
+        ['白飯','1/4碗＝40g'],
+        ['地瓜','約55g（半根）'],
+        ['全麥吐司','1片（30g）']
+      ]},
+      {name:'豆魚蛋肉類（蛋白質）', serv:'15份', kcalSub:'約1125kcal・約105g蛋白質', foods:[
+        ['雞蛋','1顆（55g）'],
+        ['雞胸肉(生)','30g'],
+        ['鮭魚','35g'],
+        ['板豆腐','3格（80g）']
+      ]},
+      {name:'蔬菜類', serv:'6-8份', kcalSub:'約175kcal（以7份估算）', foods:[
+        ['花椰菜','100g'],
+        ['番茄(小)','100g'],
+        ['高麗菜','100g']
+      ]},
+      {name:'油脂類', serv:'3份', kcalSub:'約135kcal', foods:[
+        ['苦茶油','1茶匙（5g）'],
+        ['花生醬','1茶匙（8g）'],
+        ['堅果','約5顆（8g）']
+      ]},
+    ]
+  }
+};
+let currentNutri = 'train';
+
+function switchNutri(mode){
+  currentNutri = mode;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.mode===mode));
+  renderNutri();
+}
+
+function renderNutri(){
+  const data = NUTRI[currentNutri];
+  document.getElementById('nutriKcal').innerHTML = data.kcal + ' <span>kcal</span>';
+  document.getElementById('nutriMacros').innerHTML = data.items.map(it=>{
+    const foodLis = it.foods.map(f=>`<li>${f[0]} <span>${f[1]}</span></li>`).join('');
+    return `<div class="macro-card">
+      <div class="mc-top">
+        <div class="mc-name">${it.name}</div>
+        <div class="mc-serv num">${it.serv}</div>
+      </div>
+      <div class="mc-kcal">${it.kcalSub}</div>
+      <details class="food-ex"><summary>食物範例</summary>
+        <ul class="food-list">${foodLis}</ul>
+      </details>
+    </div>`;
+  }).join('');
+
+  document.getElementById('nutriNote').innerHTML =
+    `<b>換算依據</b>：份量對照衛福部食物代換表估算（碳水1份15g醣約70kcal、蛋白質1份以中脂估算約75kcal、蔬菜1份約25kcal、油脂1份約45kcal）。若選用低脂蛋白來源（如雞胸肉、蛋白），整體熱量與脂肪會再更低。以上為估算值，請依照每週體脂／骨骼肌變化持續微調份量。`;
+}
+
+/* =========================================================
+   初始化
+========================================================= */
+document.getElementById('inDate').value = todayStr();
+seedBodyIfEmpty();
+renderBody();
+renderTrainingContainer();
+renderNutri();
+</script>
+</body>
+</html>

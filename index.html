@@ -3,905 +3,826 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>訓練日誌</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<title>PROGRESS LOG｜訓練追蹤</title>
 <style>
   :root{
-    --bg:#0a0a0a;
-    --panel:#151515;
-    --panel-2:#1c1c1c;
-    --border:#2b2b2b;
-    --steel:#3a3a3a;
-    --yellow:#f2c230;
-    --yellow-dim:#c9a227;
-    --red:#d62828;
-    --red-dim:#9c1f1f;
-    --white:#f2f2f0;
-    --muted:#8f8f8a;
-    --radius:10px;
+    --bg:#0a0f0c;
+    --bg-panel:#101713;
+    --bg-raised:#161f19;
+    --line:#243027;
+    --lime:#c8ff3d;
+    --lime-dim:#8fb62c;
+    --text:#e9f2ea;
+    --text-dim:#8fa295;
+    --text-faint:#5c6d63;
+    --danger:#ff5d5d;
+    --font-display:'Archivo Black','Arial Black',sans-serif;
+    --font-body:'Inter',-apple-system,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono','Courier New',monospace;
   }
+
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0; min-height:100%;}
+  html{background:var(--bg) !important;}
   body{
-    background:var(--bg);
-    color:var(--white);
-    font-family:'Noto Sans TC', sans-serif;
-    min-height:100vh;
+    background:var(--bg) !important;
+    color:var(--text);
+    font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;
-  }
-  .num{font-family:'Oswald',sans-serif;}
-  .app{
-    max-width:480px;
-    margin:0 auto;
+    padding-bottom:90px;
     min-height:100vh;
+  }
+  #app-root{
     background:var(--bg);
-    position:relative;
-    padding-bottom:84px;
-    border-left:1px solid var(--border);
-    border-right:1px solid var(--border);
-  }
-  @media (min-width:520px){
-    body{background:#050505;}
-    .app{margin-top:0; box-shadow:0 0 60px rgba(0,0,0,.6);}
+    min-height:100vh;
   }
 
-  /* ---------- Header ---------- */
-  .hazard{
-    height:7px;
-    background:repeating-linear-gradient(135deg, var(--yellow) 0 14px, #111 14px 28px);
-  }
-  .topbar{
-    background:linear-gradient(180deg,#141414,#0d0d0d);
-    border-bottom:1px solid var(--border);
-    padding:16px 18px 14px;
-  }
-  .topbar h1{
-    margin:0;
-    font-family:'Noto Sans TC', sans-serif;
-    font-weight:900;
-    font-size:22px;
-    letter-spacing:1px;
-    color:var(--white);
-  }
-  .topbar h1 span{color:var(--yellow);}
-  .topbar p{
-    margin:4px 0 0;
-    color:var(--muted);
-    font-size:12.5px;
-  }
+  ::selection{background:var(--lime);color:#0a0f0c;}
 
-  /* ---------- Tabs content ---------- */
-  main{padding:16px 14px 8px;}
-  .tab{display:none;}
-  .tab.active{display:block;animation:fadein .25s ease;}
-  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
-
-  .section-title{
-    display:flex; align-items:baseline; gap:8px;
-    margin:22px 0 10px;
+  /* ---------- Header / Nav ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,15,12,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
   }
-  .section-title:first-child{margin-top:4px;}
-  .section-title h2{
-    font-size:16px; margin:0; font-weight:900; color:var(--white);
+  .brand-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:16px 18px 10px;
   }
-  .section-title .bar{width:4px;height:16px;background:var(--yellow);border-radius:2px;}
-
-  /* ---------- Cards / panels ---------- */
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:14px;
-    margin-bottom:12px;
+  .brand{
+    font-family:var(--font-display);
+    font-size:20px;
+    letter-spacing:-0.02em;
+    color:var(--text);
   }
-  .hero{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
+  .brand span{color:var(--lime);}
+  .brand-sub{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--text-faint);
   }
-  .hero .stat{
-    background:var(--panel-2);
-    border:1px solid var(--border);
-    border-top:3px solid var(--yellow);
-    border-radius:8px;
-    padding:12px 8px;
-    text-align:center;
+  nav.tabs{
+    display:flex; gap:2px;
+    padding:0 12px 12px;
   }
-  .hero .stat .v{
-    font-family:'Oswald',sans-serif;
-    font-size:26px;
+  nav.tabs button{
+    flex:1;
+    background:none; border:none;
+    color:var(--text-dim);
+    font-family:var(--font-body);
     font-weight:600;
-    color:var(--white);
-    line-height:1.1;
-  }
-  .hero .stat .v small{font-size:13px; color:var(--muted); font-weight:400;}
-  .hero .stat .l{font-size:11.5px; color:var(--muted); margin-top:4px;}
-  .hero .stat .d{font-size:11px; margin-top:3px; font-family:'Oswald',sans-serif;}
-  .d.up{color:var(--yellow);}
-  .d.down{color:var(--red);}
-  .d.flat{color:var(--muted);}
-
-  /* forms */
-  label.field{display:block; margin-bottom:10px;}
-  label.field span{display:block; font-size:12px; color:var(--muted); margin-bottom:5px;}
-  input[type=number],input[type=date],input[type=text]{
-    width:100%;
-    background:#0f0f0f;
-    border:1px solid var(--steel);
-    color:var(--white);
-    padding:9px 10px;
-    border-radius:6px;
     font-size:14px;
-    font-family:'Oswald',sans-serif;
+    padding:10px 4px;
+    border-bottom:3px solid transparent;
+    cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
   }
-  input:focus{outline:2px solid var(--yellow); outline-offset:1px;}
-  .row2{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  nav.tabs button.active{
+    color:var(--lime);
+    border-bottom-color:var(--lime);
+  }
+
+  main{max-width:640px; margin:0 auto; padding:18px 14px 30px;}
+  .page{display:none;}
+  .page.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  h2.page-title{
+    font-family:var(--font-display);
+    font-size:22px;
+    margin:4px 0 16px;
+    letter-spacing:-0.01em;
+  }
+  h2.page-title .accent{color:var(--lime);}
+
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:14px;
+  }
+
+  /* ---------- Body metrics page ---------- */
+  .metric-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-bottom:16px;
+  }
+  .metric-box{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+    padding:12px 8px; text-align:center;
+  }
+  .metric-box .label{font-size:11px; color:var(--text-dim); margin-bottom:6px;}
+  .metric-box .value{font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--lime);}
+  .metric-box .unit{font-size:11px; color:var(--text-faint);}
+  .metric-box .delta{font-family:var(--font-mono); font-size:11px; margin-top:4px;}
+  .delta.up{color:var(--danger);}
+  .delta.down{color:var(--lime);}
+  .delta.flat{color:var(--text-faint);}
+
+  .form-row{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;}
+  .field{flex:1; min-width:100px;}
+  .field label{display:block; font-size:11px; color:var(--text-dim); margin-bottom:5px;}
+  input, select{
+    width:100%;
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 10px;
+    border-radius:7px;
+    font-family:var(--font-mono);
+    font-size:14px;
+  }
+  input:focus, select:focus{outline:2px solid var(--lime); outline-offset:0; border-color:var(--lime);}
 
   .btn{
-    display:inline-flex; align-items:center; justify-content:center;
-    gap:6px;
-    border:none; cursor:pointer;
-    font-family:'Noto Sans TC',sans-serif;
+    background:var(--lime);
+    color:#0a0f0c;
+    border:none;
     font-weight:700;
-    font-size:13.5px;
+    font-family:var(--font-body);
+    font-size:14px;
     padding:11px 16px;
     border-radius:7px;
-    width:100%;
+    cursor:pointer;
+    transition:transform .1s ease, box-shadow .15s ease;
   }
-  .btn-primary{background:var(--yellow); color:#161200;}
-  .btn-primary:active{background:var(--yellow-dim);}
-  .btn-ghost{background:transparent; border:1px solid var(--steel); color:var(--white);}
-  .btn-danger{background:transparent; border:1px solid var(--red-dim); color:var(--red);}
-  .btn-row{display:flex; gap:8px;}
-  .btn-row .btn{flex:1;}
+  .btn:active{transform:scale(0.97);}
+  .btn.block{width:100%;}
+  .btn.ghost{
+    background:transparent; color:var(--text-dim); border:1px solid var(--line);
+    font-weight:600;
+  }
+  .btn.small{padding:6px 10px; font-size:12px;}
+  .btn.danger-outline{background:transparent; border:1px solid var(--danger); color:var(--danger);}
 
-  /* history list */
-  .hist-row{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 0;
-    border-bottom:1px solid var(--border);
-    gap:8px;
+  table.log-table{width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:13px;}
+  table.log-table th{
+    text-align:left; color:var(--text-faint); font-weight:600;
+    font-size:11px; padding:6px 6px; border-bottom:1px solid var(--line);
   }
-  .hist-row:last-child{border-bottom:none;}
-  .hist-date{font-size:12px; color:var(--muted); min-width:70px; font-family:'Oswald',sans-serif;}
-  .hist-vals{display:flex; gap:10px; flex:1; flex-wrap:wrap;}
-  .hist-vals .item{font-size:13px; font-family:'Oswald',sans-serif;}
-  .hist-vals .item b{font-weight:600;}
-  .hist-vals .item span{color:var(--muted); font-size:10.5px; font-family:'Noto Sans TC',sans-serif;}
-  .del-btn{
-    background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;
-  }
-  .del-btn:hover{color:var(--red);}
-  .empty-note{color:var(--muted); font-size:13px; padding:8px 0;}
+  table.log-table td{padding:9px 6px; border-bottom:1px solid var(--line); color:var(--text);}
+  table.log-table tr:last-child td{border-bottom:none;}
+  .empty-note{color:var(--text-faint); font-size:13px; padding:10px 2px;}
 
-  /* ---------- Bottom nav ---------- */
-  .bottomnav{
-    position:fixed; left:0; right:0; bottom:0;
-    max-width:480px; margin:0 auto;
-    background:#0d0d0d;
-    border-top:1px solid var(--border);
-    display:flex;
-    z-index:20;
+  /* ---------- Workout page ---------- */
+  .day-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .day-tabs button{
+    flex:1; background:var(--bg-panel); border:1px solid var(--line);
+    color:var(--text-dim); padding:12px 6px; border-radius:9px;
+    font-weight:700; font-size:13px; cursor:pointer; line-height:1.3;
   }
-  .navbtn{
-    flex:1; background:none; border:none; color:var(--muted);
-    padding:10px 4px 12px; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    font-family:'Noto Sans TC',sans-serif; font-size:11px; font-weight:700;
+  .day-tabs button.active{
+    border-color:var(--lime); color:var(--lime); background:#141d13;
+    box-shadow:0 0 0 1px var(--lime) inset;
   }
-  .navbtn svg{width:20px;height:20px;stroke:var(--muted); fill:none; stroke-width:1.8;}
-  .navbtn.active{color:var(--yellow);}
-  .navbtn.active svg{stroke:var(--yellow);}
-  .navbtn.active{position:relative;}
-  .navbtn.active::before{
-    content:"";
-    position:absolute; top:0; left:20%; right:20%; height:2px;
-    background:var(--yellow);
-  }
+  .day-tabs button small{display:block; font-weight:500; color:var(--text-faint); font-size:11px; margin-top:2px;}
+  .day-tabs button.active small{color:var(--lime-dim);}
 
-  /* ---------- Training tab ---------- */
-  .daytabs{display:flex; gap:8px; margin-bottom:14px;}
-  .daytab{
-    flex:1; text-align:center; padding:9px 4px;
-    border:1px solid var(--steel); border-radius:7px;
-    background:var(--panel); color:var(--muted);
-    font-weight:700; font-size:13.5px; cursor:pointer;
+  .exercise-card{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+    margin-bottom:12px; overflow:hidden;
   }
-  .daytab.active{background:var(--yellow); color:#161200; border-color:var(--yellow);}
-
-  .dayview{display:none;}
-  .dayview.active{display:block;}
-
-  .ex-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    margin-bottom:10px; overflow:hidden;
-  }
-  .ex-head{
-    padding:11px 13px 9px;
-    border-bottom:1px solid var(--border);
+  .exercise-head{
     display:flex; justify-content:space-between; align-items:center;
-    gap:8px;
+    padding:14px 14px 10px;
   }
-  .ex-head .name{font-weight:700; font-size:14.5px;}
-  .ex-head .suggest{
-    font-family:'Oswald',sans-serif; font-size:12px; color:var(--yellow);
-    white-space:nowrap;
+  .exercise-name{font-size:15px; font-weight:700;}
+  .exercise-target{
+    font-family:var(--font-mono); font-size:11px; color:var(--lime-dim);
+    background:rgba(200,255,61,0.08); padding:3px 8px; border-radius:5px; white-space:nowrap;
   }
-  .set-row{
-    display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px;
-    align-items:center;
-    padding:8px 13px;
-    border-bottom:1px solid #111;
+  .set-table{width:100%; border-collapse:collapse; padding:0 14px;}
+  .set-table th{
+    font-size:10px; color:var(--text-faint); text-align:center; font-weight:600;
+    padding:4px 2px; border-top:1px solid var(--line);
   }
-  .set-row:last-child{border-bottom:none;}
-  .set-row .setno{
-    font-family:'Oswald',sans-serif; color:var(--muted); font-size:13px; text-align:center;
+  .set-table td{padding:6px 4px; text-align:center;}
+  .set-table td.set-num{font-family:var(--font-mono); color:var(--text-faint); font-size:12px;}
+  .set-table input{padding:7px 2px; text-align:center; font-size:13px;}
+  .set-table .chk-cell{width:36px;}
+  .set-table .chk{
+    width:22px; height:22px; accent-color:var(--lime); cursor:pointer;
   }
-  .set-row input[type=number]{padding:7px 6px; font-size:13.5px;}
-  .set-row .chk-wrap{display:flex; justify-content:center;}
-  .set-row input[type=checkbox]{
-    width:22px; height:22px; accent-color:var(--yellow); cursor:pointer;
-  }
-  .set-row.done{background:rgba(242,194,48,0.06);}
-  .set-row.done input[type=number]{border-color:var(--yellow-dim);}
-  .unit-lbl{font-size:10px; color:var(--muted); text-align:center; margin-top:2px;}
-  .grid-lbl{display:grid; grid-template-columns:26px 1fr 1fr 34px; gap:8px; padding:0 13px; margin-bottom:2px;}
-  .grid-lbl span{font-size:10.5px; color:var(--muted); text-align:center;}
+  tr.set-done td input{color:var(--lime-dim); border-color:var(--lime-dim);}
+  tr.set-done{background:rgba(200,255,61,0.04);}
 
-  .hist-block{margin-bottom:8px; border:1px solid var(--border); border-radius:8px; background:var(--panel);}
-  .hist-block summary{
-    padding:10px 12px; cursor:pointer; font-size:13px; font-weight:700;
-    display:flex; justify-content:space-between; list-style:none;
-  }
-  .hist-block summary::-webkit-details-marker{display:none;}
-  .hist-block summary .arr{color:var(--muted); font-weight:400;}
-  .hist-block .hist-body{padding:0 12px 10px;}
-  .hist-ex-line{font-size:12.5px; color:var(--muted); padding:4px 0; border-top:1px solid #111;}
-  .hist-ex-line b{color:var(--white); font-weight:600;}
+  .exercise-foot{padding:8px 14px 14px; display:flex; justify-content:flex-end;}
 
-  /* rest timer */
-  .rest-timer{
-    position:fixed; left:0; right:0; bottom:0;
-    max-width:480px; margin:0 auto;
-    background:#111;
-    border-top:2px solid var(--red);
-    transform:translateY(120%);
-    transition:transform .3s ease;
-    z-index:30;
-    padding:14px 16px 16px;
+  #rest-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:100;
+    background:var(--bg-raised); border-top:1px solid var(--lime);
+    padding:12px 16px; display:none;
+    box-shadow:0 -6px 24px rgba(0,0,0,0.5);
   }
-  .rest-timer.show{transform:translateY(0);}
-  .rest-timer .rt-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
-  .rest-timer .rt-label{font-size:12.5px; color:var(--muted); font-weight:700;}
-  .rest-timer .rt-count{
-    font-family:'Oswald',sans-serif; font-size:38px; text-align:center; color:var(--white);
-    line-height:1;
-  }
-  .rest-timer .rt-count.warn{color:var(--red);}
-  .rt-bar{height:5px; background:#2a2a2a; border-radius:3px; overflow:hidden; margin:10px 0 12px;}
-  .rt-bar-fill{height:100%; background:var(--red); width:100%; transition:width 1s linear;}
-  .rt-btns{display:flex; gap:8px;}
-  .rt-btns button{
-    flex:1; background:#1c1c1c; border:1px solid var(--steel); color:var(--white);
-    padding:8px; border-radius:6px; font-size:12.5px; cursor:pointer; font-weight:700;
-  }
-  .rt-btns button.stop{border-color:var(--red-dim); color:var(--red);}
+  #rest-bar.show{display:block;}
+  .rest-row{display:flex; align-items:center; gap:14px;}
+  .rest-time{font-family:var(--font-mono); font-size:28px; font-weight:700; color:var(--lime); min-width:64px;}
+  .rest-label{font-size:12px; color:var(--text-dim); flex:1;}
+  .rest-progress{height:4px; background:var(--line); border-radius:2px; margin-top:8px; overflow:hidden;}
+  .rest-progress-bar{height:100%; background:var(--lime); transition:width 1s linear;}
+  .rest-actions{display:flex; gap:8px;}
 
-  /* ---------- Nutrition tab ---------- */
-  .pillrow{display:flex; gap:8px; margin-bottom:14px;}
-  .pill{
-    flex:1; text-align:center; padding:9px; border-radius:20px;
-    border:1px solid var(--steel); color:var(--muted); font-weight:700; font-size:13.5px; cursor:pointer;
+  /* ---------- Nutrition page ---------- */
+  .nutri-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .nutri-tabs button{
+    flex:1; background:var(--bg-panel); border:1px solid var(--line);
+    color:var(--text-dim); padding:11px 6px; border-radius:9px;
+    font-weight:700; font-size:13px; cursor:pointer;
   }
-  .pill.active{background:var(--red); border-color:var(--red); color:var(--white);}
+  .nutri-tabs button.active{border-color:var(--lime); color:var(--lime); background:#141d13;}
 
   .kcal-hero{
-    text-align:center; padding:20px 10px; background:var(--panel);
-    border:1px solid var(--border); border-radius:var(--radius); margin-bottom:14px;
-    border-top:3px solid var(--red);
+    background:linear-gradient(160deg,#141d13,#0e140f);
+    border:1px solid var(--line); border-radius:12px;
+    padding:20px; text-align:center; margin-bottom:14px;
   }
-  .kcal-hero .big{font-family:'Oswald',sans-serif; font-size:44px; color:var(--white); font-weight:600;}
-  .kcal-hero .big span{font-size:16px; color:var(--muted);}
-  .kcal-hero .sub{font-size:12px; color:var(--muted); margin-top:4px;}
+  .kcal-hero .kcal-num{font-family:var(--font-display); font-size:44px; color:var(--lime); letter-spacing:-0.02em;}
+  .kcal-hero .kcal-unit{font-family:var(--font-mono); font-size:13px; color:var(--text-dim);}
 
-  .macro-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    padding:12px 14px; margin-bottom:10px;
-  }
-  .macro-card .mc-top{display:flex; justify-content:space-between; align-items:center;}
-  .macro-card .mc-name{font-weight:700; font-size:14px;}
-  .macro-card .mc-serv{font-family:'Oswald',sans-serif; color:var(--yellow); font-size:15px;}
-  .macro-card .mc-kcal{font-size:11.5px; color:var(--muted); margin-top:3px;}
-  details.food-ex{margin-top:8px;}
-  details.food-ex summary{
-    font-size:12px; color:var(--muted); cursor:pointer; list-style:none;
-  }
-  details.food-ex summary::-webkit-details-marker{display:none;}
-  details.food-ex summary::before{content:"▸ ";}
-  details.food-ex[open] summary::before{content:"▾ ";}
-  .food-list{margin:8px 0 0; padding-left:0; list-style:none;}
-  .food-list li{
-    font-size:12.5px; color:var(--white); padding:5px 0 5px 10px;
-    border-left:2px solid var(--steel); margin-bottom:4px;
-  }
-  .food-list li span{color:var(--muted); font-size:11px;}
+  .macro-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;}
+  .macro-box{background:var(--bg-panel); border:1px solid var(--line); border-radius:10px; padding:12px 8px; text-align:center;}
+  .macro-box .macro-name{font-size:12px; color:var(--text-dim); margin-bottom:4px;}
+  .macro-box .macro-serv{font-family:var(--font-mono); font-size:19px; font-weight:700; color:var(--lime);}
+  .macro-box .macro-detail{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-top:3px;}
 
-  .note{
-    font-size:12px; color:var(--muted); line-height:1.6;
-    background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
-    padding:12px 14px; margin-top:6px;
+  .food-cat{margin-bottom:12px;}
+  .food-cat h4{font-size:13px; margin:0 0 8px; color:var(--lime-dim); font-weight:700;}
+  .food-list{display:flex; flex-wrap:wrap; gap:7px;}
+  .food-chip{
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; font-size:12px; color:var(--text);
   }
-  .note b{color:var(--white);}
+  .note{font-size:12px; color:var(--text-faint); line-height:1.6; margin-top:6px;}
 
-  .toast{
-    position:fixed; left:50%; bottom:100px; transform:translate(-50%,10px);
-    background:var(--yellow); color:#161200; font-weight:700; font-size:13px;
-    padding:9px 18px; border-radius:20px; opacity:0; pointer-events:none;
-    transition:all .25s ease; z-index:50; max-width:480px;
+  @media (min-width:520px){
+    .metric-grid{grid-template-columns:repeat(3,1fr);}
   }
-  .toast.show{opacity:1; transform:translate(-50%,0);}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="app-root">
 
-  <div class="hazard"></div>
-  <header class="topbar">
-    <h1>訓練<span>日誌</span></h1>
-    <p>身高 167cm・增肌減脂進行中</p>
-  </header>
-
-  <main>
-
-    <!-- ============ TAB 1: 身體數據 ============ -->
-    <section class="tab active" id="tab-body">
-
-      <div class="section-title"><div class="bar"></div><h2>本週身體數據</h2></div>
-      <div class="panel">
-        <div class="hero" id="bodyHero"></div>
-      </div>
-
-      <div class="section-title"><div class="bar"></div><h2>新增紀錄</h2></div>
-      <div class="panel">
-        <label class="field"><span>日期</span><input type="date" id="inDate"></label>
-        <div class="row2">
-          <label class="field"><span>體重 (kg)</span><input type="number" step="0.1" id="inWeight" placeholder="65.0"></label>
-          <label class="field"><span>體脂率 (%)</span><input type="number" step="0.1" id="inFat" placeholder="33.3"></label>
-          <label class="field"><span>骨骼肌 (kg)</span><input type="number" step="0.1" id="inMuscle" placeholder="22.9"></label>
-        </div>
-        <button class="btn btn-primary" onclick="saveBodyLog()">儲存本次紀錄</button>
-      </div>
-
-      <div class="section-title"><div class="bar"></div><h2>歷史紀錄</h2></div>
-      <div class="panel" id="bodyHistory"></div>
-
-    </section>
-
-    <!-- ============ TAB 2: 訓練菜單 ============ -->
-    <section class="tab" id="tab-training">
-
-      <div class="daytabs">
-        <div class="daytab active" data-day="back" onclick="switchDay('back')">背日</div>
-        <div class="daytab" data-day="leg" onclick="switchDay('leg')">腿日</div>
-        <div class="daytab" data-day="chest" onclick="switchDay('chest')">胸+小肌群</div>
-      </div>
-
-      <div id="trainingContainer"></div>
-
-    </section>
-
-    <!-- ============ TAB 3: 營養計劃 ============ -->
-    <section class="tab" id="tab-nutrition">
-
-      <div class="pillrow">
-        <div class="pill active" data-mode="train" onclick="switchNutri('train')">訓練日</div>
-        <div class="pill" data-mode="rest" onclick="switchNutri('rest')">休息日</div>
-      </div>
-
-      <div class="kcal-hero">
-        <div class="big num" id="nutriKcal">2285 <span>kcal</span></div>
-        <div class="sub">目標：增肌減脂・依衛福部食物代換份量估算</div>
-      </div>
-
-      <div id="nutriMacros"></div>
-
-      <div class="note" id="nutriNote"></div>
-
-    </section>
-
-  </main>
-
-  <nav class="bottomnav">
-    <button class="navbtn active" data-tab="tab-body" onclick="switchTab('tab-body')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 9h18M9 21V9"></path></svg>
-      身體數據
-    </button>
-    <button class="navbtn" data-tab="tab-training" onclick="switchTab('tab-training')">
-      <svg viewBox="0 0 24 24"><path d="M4 8v8M2 10v4M22 10v4M20 8v8M7 12h10"></path></svg>
-      訓練菜單
-    </button>
-    <button class="navbtn" data-tab="tab-nutrition" onclick="switchTab('tab-nutrition')">
-      <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0016 0M4 12h16M12 3v3"></path></svg>
-      營養計劃
-    </button>
-  </nav>
-
-  <div class="rest-timer" id="restTimer">
-    <div class="rt-top">
-      <span class="rt-label">組間休息</span>
-      <span class="rt-label" id="rtStatus">READY</span>
-    </div>
-    <div class="rt-count num" id="rtCount">90</div>
-    <div class="rt-bar"><div class="rt-bar-fill" id="rtFill"></div></div>
-    <div class="rt-btns">
-      <button onclick="adjustRest(-15)">-15s</button>
-      <button onclick="adjustRest(15)">+15s</button>
-      <button class="stop" onclick="stopRest()">結束</button>
+<header>
+  <div class="brand-row">
+    <div>
+      <div class="brand">PROGRESS<span>//</span>LOG</div>
+      <div class="brand-sub">身高 167cm · 增肌減脂週期</div>
     </div>
   </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-page="page-body">身體數據</button>
+    <button class="tab-btn" data-page="page-workout">訓練菜單</button>
+    <button class="tab-btn" data-page="page-nutrition">營養計劃</button>
+  </nav>
+</header>
 
-  <div class="toast" id="toast"></div>
+<main>
 
+  <!-- ============ PAGE 1: BODY METRICS ============ -->
+  <section id="page-body" class="page active">
+    <h2 class="page-title">身體數據 <span class="accent">週追蹤</span></h2>
+
+    <div class="metric-grid" id="latest-metric-grid">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="in-date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>體重 (kg)</label>
+          <input type="number" step="0.1" id="in-weight" placeholder="65.0">
+        </div>
+        <div class="field">
+          <label>體脂率 (%)</label>
+          <input type="number" step="0.1" id="in-bodyfat" placeholder="33.3">
+        </div>
+        <div class="field">
+          <label>骨骼肌 (kg)</label>
+          <input type="number" step="0.1" id="in-muscle" placeholder="22.9">
+        </div>
+      </div>
+      <button class="btn block" id="btn-add-metric">儲存本週紀錄</button>
+    </div>
+
+    <div class="card">
+      <table class="log-table" id="metric-table">
+        <thead>
+          <tr><th>日期</th><th>體重</th><th>體脂率</th><th>骨骼肌</th><th>BMI</th><th></th></tr>
+        </thead>
+        <tbody id="metric-tbody"></tbody>
+      </table>
+      <div class="empty-note" id="metric-empty" style="display:none;">還沒有紀錄，新增第一筆吧。</div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE 2: WORKOUT ============ -->
+  <section id="page-workout" class="page">
+    <h2 class="page-title">訓練菜單 <span class="accent">Day Plan</span></h2>
+
+    <div class="day-tabs" id="day-tabs">
+      <button class="day-btn active" data-day="day1">Day 1<small>背・肩・二頭</small></button>
+      <button class="day-btn" data-day="day2">Day 2<small>腿・胸・肩</small></button>
+      <button class="day-btn" data-day="day3">Day 3<small>胸・背・肩・手臂</small></button>
+    </div>
+
+    <div id="exercise-list"></div>
+  </section>
+
+  <!-- ============ PAGE 3: NUTRITION ============ -->
+  <section id="page-nutrition" class="page">
+    <h2 class="page-title">營養計劃 <span class="accent">Fuel Plan</span></h2>
+
+    <div class="nutri-tabs" id="nutri-tabs">
+      <button class="nutri-btn active" data-plan="training">訓練日</button>
+      <button class="nutri-btn" data-plan="rest">休息日</button>
+    </div>
+
+    <div id="nutrition-body"></div>
+
+    <div class="card">
+      <h4 style="margin-top:0; color:var(--lime-dim); font-size:13px;">份量換算基準（衛福部每日飲食指南）</h4>
+      <div class="note">
+        全穀雜糧類 1 份 ≈ 15g 碳水化合物＋2g 蛋白質，約 70 大卡（例：白飯 40g／一碗 160g＝4份）<br>
+        豆魚蛋肉類 1 份（中脂平均）≈ 7g 蛋白質＋5g 脂肪，約 75 大卡<br>
+        蔬菜類 1 份 ≈ 100g 生重，約 5g 碳水＋1g 蛋白質，約 25 大卡<br>
+        以上為三大類基礎換算，未含烹調用油與水果類；實際熱量會依烹調方式略增。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</div>
+<!-- Rest timer bar -->
+<div id="rest-bar">
+  <div class="rest-row">
+    <div class="rest-time" id="rest-time">01:30</div>
+    <div class="rest-label" id="rest-label">組間休息中</div>
+    <div class="rest-actions">
+      <button class="btn ghost small" id="rest-minus">-15s</button>
+      <button class="btn ghost small" id="rest-skip">跳過</button>
+    </div>
+  </div>
+  <div class="rest-progress"><div class="rest-progress-bar" id="rest-progress-bar" style="width:100%;"></div></div>
 </div>
 
 <script>
+(function(){
+
+/* ---------------- storage helpers (cloud -> localStorage -> memory) ---------------- */
+const memoryStore = {};
+
+async function getData(key, fallback){
+  if(window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      if(r) return JSON.parse(r.value);
+    }catch(e){ /* not available here, fall through to local */ }
+  }
+  try{
+    const raw = localStorage.getItem('pl_'+key);
+    if(raw !== null) return JSON.parse(raw);
+  }catch(e){ /* localStorage unavailable, fall through */ }
+  if(memoryStore[key] !== undefined) return memoryStore[key];
+  return fallback;
+}
+
+async function setData(key, value){
+  memoryStore[key] = value;
+  let cloudOk = false;
+  if(window.storage){
+    try{
+      const res = await window.storage.set(key, JSON.stringify(value), false);
+      if(res) cloudOk = true;
+    }catch(e){ cloudOk = false; }
+  }
+  if(!cloudOk){
+    try{ localStorage.setItem('pl_'+key, JSON.stringify(value)); }
+    catch(e){ /* silently keep the in-memory copy as last resort */ }
+  }
+}
+
+/* ---------------- tab navigation ---------------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.page).classList.add('active');
+  });
+});
+
 /* =========================================================
-   共用工具
-========================================================= */
+   PAGE 1 — BODY METRICS
+   ========================================================= */
+const HEIGHT_M = 1.67;
+const METRIC_KEY = 'body-metrics-log';
+let metricLog = [];
+
 function todayStr(){
   const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function fmtDate(s){
-  const [y,m,d] = s.split('-');
-  return y+'/'+m+'/'+d;
-}
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1600);
-}
-function loadLS(key, fallback){
-  try{
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  }catch(e){ return fallback; }
-}
-function saveLS(key, val){
-  localStorage.setItem(key, JSON.stringify(val));
+  return d.toISOString().slice(0,10);
 }
 
-/* =========================================================
-   TAB / NAV 切換
-========================================================= */
-function switchTab(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.navbtn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.tab === id);
+function bmi(weight){
+  return (weight / (HEIGHT_M*HEIGHT_M)).toFixed(1);
+}
+
+function fmtDelta(curr, prev, lowerIsGood){
+  if(prev === undefined || prev === null) return '<span class="delta flat">首筆</span>';
+  const diff = (curr - prev);
+  const sign = diff > 0 ? '+' : '';
+  const goodDir = lowerIsGood ? diff < 0 : diff > 0;
+  const cls = Math.abs(diff) < 0.05 ? 'flat' : (goodDir ? 'down' : 'up');
+  return `<span class="delta ${cls}">${sign}${diff.toFixed(1)} vs 上筆</span>`;
+}
+
+function renderMetricGrid(){
+  const grid = document.getElementById('latest-metric-grid');
+  if(metricLog.length === 0){
+    grid.innerHTML = `
+      <div class="metric-box"><div class="label">體重</div><div class="value">—</div><div class="unit">kg</div></div>
+      <div class="metric-box"><div class="label">體脂率</div><div class="value">—</div><div class="unit">%</div></div>
+      <div class="metric-box"><div class="label">骨骼肌</div><div class="value">—</div><div class="unit">kg</div></div>
+    `;
+    return;
+  }
+  const sorted = [...metricLog].sort((a,b)=> a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length-1];
+  const prev = sorted.length > 1 ? sorted[sorted.length-2] : null;
+  grid.innerHTML = `
+    <div class="metric-box">
+      <div class="label">體重</div>
+      <div class="value">${latest.weight}</div><div class="unit">kg</div>
+      ${fmtDelta(latest.weight, prev?prev.weight:null, true)}
+    </div>
+    <div class="metric-box">
+      <div class="label">體脂率</div>
+      <div class="value">${latest.bodyfat}</div><div class="unit">%</div>
+      ${fmtDelta(latest.bodyfat, prev?prev.bodyfat:null, true)}
+    </div>
+    <div class="metric-box">
+      <div class="label">骨骼肌</div>
+      <div class="value">${latest.muscle}</div><div class="unit">kg</div>
+      ${fmtDelta(latest.muscle, prev?prev.muscle:null, false)}
+    </div>
+  `;
+}
+
+function renderMetricTable(){
+  const tbody = document.getElementById('metric-tbody');
+  const emptyNote = document.getElementById('metric-empty');
+  const sorted = [...metricLog].sort((a,b)=> b.date.localeCompare(a.date));
+  if(sorted.length === 0){
+    tbody.innerHTML = '';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  emptyNote.style.display = 'none';
+  tbody.innerHTML = sorted.map(row => `
+    <tr>
+      <td>${row.date}</td>
+      <td>${row.weight}</td>
+      <td>${row.bodyfat}%</td>
+      <td>${row.muscle}</td>
+      <td>${bmi(row.weight)}</td>
+      <td><button class="btn danger-outline small" data-del="${row.id}">刪除</button></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const id = b.dataset.del;
+      metricLog = metricLog.filter(r => r.id !== id);
+      await setData(METRIC_KEY, metricLog);
+      renderMetricGrid();
+      renderMetricTable();
+    });
   });
 }
 
-/* =========================================================
-   TAB 1：身體數據
-========================================================= */
-const BODY_KEY = 'ironlog_body_v1';
-
-function seedBodyIfEmpty(){
-  let logs = loadLS(BODY_KEY, null);
-  if(!logs || logs.length===0){
-    logs = [{date: todayStr(), weight:65, fat:33.3, muscle:22.9}];
-    saveLS(BODY_KEY, logs);
-  }
-  return logs;
-}
-
-function getBodyLogsSorted(){
-  const logs = loadLS(BODY_KEY, []);
-  return logs.slice().sort((a,b)=> b.date.localeCompare(a.date));
-}
-
-function renderBody(){
-  const logs = getBodyLogsSorted();
-  const hero = document.getElementById('bodyHero');
-  const latest = logs[0];
-  const prev = logs[1];
-
-  function deltaHtml(cur, prevVal, goodDir){
-    if(prevVal===undefined) return '<div class="d flat">首筆紀錄</div>';
-    const diff = +(cur - prevVal).toFixed(1);
-    if(diff===0) return '<div class="d flat">持平</div>';
-    const isGood = goodDir==='down' ? diff<0 : diff>0;
-    const arrow = diff>0 ? '▲' : '▼';
-    return `<div class="d ${isGood?'up':'down'}">${arrow} ${Math.abs(diff)}</div>`;
-  }
-
-  if(latest){
-    hero.innerHTML = `
-      <div class="stat">
-        <div class="v">${latest.weight}<small>kg</small></div>
-        <div class="l">體重</div>
-        ${deltaHtml(latest.weight, prev?prev.weight:undefined,'down')}
-      </div>
-      <div class="stat">
-        <div class="v">${latest.fat}<small>%</small></div>
-        <div class="l">體脂率</div>
-        ${deltaHtml(latest.fat, prev?prev.fat:undefined,'down')}
-      </div>
-      <div class="stat">
-        <div class="v">${latest.muscle}<small>kg</small></div>
-        <div class="l">骨骼肌</div>
-        ${deltaHtml(latest.muscle, prev?prev.muscle:undefined,'up')}
-      </div>`;
-  }
-
-  const histEl = document.getElementById('bodyHistory');
-  if(logs.length===0){
-    histEl.innerHTML = '<div class="empty-note">尚無紀錄，開始記錄你的第一筆數據吧。</div>';
+document.getElementById('btn-add-metric').addEventListener('click', async ()=>{
+  const date = document.getElementById('in-date').value || todayStr();
+  const weight = parseFloat(document.getElementById('in-weight').value);
+  const bodyfat = parseFloat(document.getElementById('in-bodyfat').value);
+  const muscle = parseFloat(document.getElementById('in-muscle').value);
+  if(isNaN(weight) || isNaN(bodyfat) || isNaN(muscle)){
+    alert('請完整填入體重、體脂率、骨骼肌');
     return;
   }
-  histEl.innerHTML = logs.map((l,i)=>{
-    return `<div class="hist-row">
-      <div class="hist-date">${fmtDate(l.date)}</div>
-      <div class="hist-vals">
-        <div class="item"><b>${l.weight}</b><span> kg</span></div>
-        <div class="item"><b>${l.fat}</b><span> %</span></div>
-        <div class="item"><b>${l.muscle}</b><span> kg肌</span></div>
-      </div>
-      <button class="del-btn" onclick="deleteBodyLog('${l.date}')">✕</button>
-    </div>`;
-  }).join('');
-}
+  metricLog = metricLog.filter(r => r.date !== date); // overwrite same-date entry
+  metricLog.push({ id: Date.now().toString(), date, weight, bodyfat, muscle });
+  await setData(METRIC_KEY, metricLog);
+  renderMetricGrid();
+  renderMetricTable();
+  document.getElementById('in-weight').value = '';
+  document.getElementById('in-bodyfat').value = '';
+  document.getElementById('in-muscle').value = '';
+});
 
-function saveBodyLog(){
-  const date = document.getElementById('inDate').value || todayStr();
-  const weight = parseFloat(document.getElementById('inWeight').value);
-  const fat = parseFloat(document.getElementById('inFat').value);
-  const muscle = parseFloat(document.getElementById('inMuscle').value);
-
-  if(isNaN(weight) || isNaN(fat) || isNaN(muscle)){
-    showToast('請完整填寫體重／體脂率／骨骼肌');
-    return;
+async function initMetrics(){
+  document.getElementById('in-date').value = todayStr();
+  metricLog = await getData(METRIC_KEY, null);
+  if(metricLog === null){
+    // seed with the user's baseline stats
+    metricLog = [{ id:'baseline', date: todayStr(), weight:65, bodyfat:33.3, muscle:22.9 }];
+    await setData(METRIC_KEY, metricLog);
   }
-  let logs = loadLS(BODY_KEY, []);
-  logs = logs.filter(l=>l.date!==date);
-  logs.push({date, weight, fat, muscle});
-  saveLS(BODY_KEY, logs);
-  document.getElementById('inWeight').value='';
-  document.getElementById('inFat').value='';
-  document.getElementById('inMuscle').value='';
-  renderBody();
-  showToast('已儲存本週數據');
-}
-
-function deleteBodyLog(date){
-  if(!confirm('確定刪除這筆紀錄？')) return;
-  let logs = loadLS(BODY_KEY, []);
-  logs = logs.filter(l=>l.date!==date);
-  saveLS(BODY_KEY, logs);
-  renderBody();
+  renderMetricGrid();
+  renderMetricTable();
 }
 
 /* =========================================================
-   TAB 2：訓練菜單
-========================================================= */
-const EXERCISES = {
-  back:[
-    {name:'滑輪下拉', sets:4, reps:'8-10'},
-    {name:'X型下拉', sets:3, reps:'10-12'},
-    {name:'滑輪坐姿划船', sets:3, reps:'10-12'},
-    {name:'器械上斜下拉', sets:3, reps:'10-12'},
-    {name:'器械水平划船', sets:3, reps:'10-12'},
-    {name:'輔助引體向上', sets:3, reps:'6-10'},
-    {name:'器械槓片划船', sets:3, reps:'10-12'},
-  ],
-  leg:[
-    {name:'硬舉', sets:4, reps:'6-8'},
-    {name:'保加利亞分腿蹲', sets:3, reps:'10-12(單腳)'},
-    {name:'高腳杯深蹲／槓鈴深蹲', sets:4, reps:'8-10'},
-    {name:'器械大腿伸屈', sets:3, reps:'12-15'},
-    {name:'相撲啞鈴深蹲', sets:3, reps:'10-12'},
-  ],
-  chest:[
-    {name:'槓鈴臥推', sets:4, reps:'6-8'},
-    {name:'啞鈴上斜臥推', sets:3, reps:'8-10'},
-    {name:'啞鈴肩推', sets:3, reps:'10-12'},
-    {name:'側平舉', sets:3, reps:'15'},
-    {name:'二頭彎舉', sets:3, reps:'12-15'},
-    {name:'三頭平槓過頭延伸', sets:3, reps:'12-15'},
-  ]
+   PAGE 2 — WORKOUT
+   ========================================================= */
+const WORKOUT_KEY = 'workout-state-v1';
+
+const WORKOUT_PLAN = {
+  day1: {
+    label: '背＋肩＋二頭',
+    exercises: [
+      { name:'輔助引體向上', sets:3, target:'6–10下 · RIR1–2' },
+      { name:'X 型下拉',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'滑輪坐姿划船', sets:3, target:'8–12下 · RIR1–2' },
+      { name:'啞鈴肩推',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'側平舉',       sets:4, target:'12–20下 · RIR1–2' },
+      { name:'二頭彎舉',     sets:3, target:'8–12下 · RIR1–2' },
+    ]
+  },
+  day2: {
+    label: '腿＋胸＋肩',
+    exercises: [
+      { name:'羅馬尼亞硬舉',   sets:3, target:'8–10下 · RIR2' },
+      { name:'保加利亞分腿蹲', sets:3, target:'8–12下/側 · RIR1–2' },
+      { name:'高腳杯深蹲',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'槓鈴臥推',       sets:4, target:'6–10下 · RIR1–2' },
+      { name:'啞鈴上斜臥推',   sets:3, target:'8–12下 · RIR1–2' },
+      { name:'側平舉',         sets:3, target:'12–20下 · RIR1–2' },
+    ]
+  },
+  day3: {
+    label: '胸＋背＋肩＋手臂',
+    exercises: [
+      { name:'啞鈴上斜臥推', sets:3, target:'8–12下 · RIR1–2' },
+      { name:'器械水平划船', sets:3, target:'8–12下 · RIR1–2' },
+      { name:'滑輪下拉',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'啞鈴肩推',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'側平舉',       sets:4, target:'12–20下 · RIR1–2' },
+      { name:'二頭彎舉',     sets:3, target:'8–12下 · RIR1–2' },
+      { name:'三頭過頭伸展', sets:3, target:'10–15下 · RIR1–2' },
+    ]
+  }
 };
-const DAY_LABEL = {back:'背日', leg:'腿日', chest:'胸日+小肌群'};
-const DRAFT_KEY = 'ironlog_draft_v1';
-const WORKOUT_KEY = 'ironlog_workout_v1';
-let currentDay = 'back';
 
-function emptyDraftFor(day){
-  return EXERCISES[day].map(ex => Array.from({length:ex.sets}, ()=>({w:'',r:'',done:false})));
-}
-function getDraft(){
-  let d = loadLS(DRAFT_KEY, {});
-  ['back','leg','chest'].forEach(day=>{
-    if(!d[day]) d[day] = emptyDraftFor(day);
+let workoutState = {};
+let currentDay = 'day1';
+let saveTimer = null;
+
+function emptySet(){ return { w:'', r:'', rir:'', done:false }; }
+
+function ensureWorkoutState(){
+  Object.keys(WORKOUT_PLAN).forEach(dayKey=>{
+    if(!workoutState[dayKey]) workoutState[dayKey] = {};
+    WORKOUT_PLAN[dayKey].exercises.forEach((ex, exIdx)=>{
+      if(!workoutState[dayKey][exIdx]){
+        workoutState[dayKey][exIdx] = Array.from({length: ex.sets}, emptySet);
+      }else{
+        // pad/truncate if plan size changed
+        const arr = workoutState[dayKey][exIdx];
+        while(arr.length < ex.sets) arr.push(emptySet());
+      }
+    });
   });
-  return d;
-}
-function saveDraft(d){ saveLS(DRAFT_KEY, d); }
-
-function switchDay(day){
-  currentDay = day;
-  document.querySelectorAll('.daytab').forEach(t=>t.classList.toggle('active', t.dataset.day===day));
-  document.querySelectorAll('.dayview').forEach(v=>v.classList.toggle('active', v.id==='dv-'+day));
 }
 
-function renderTrainingContainer(){
-  const container = document.getElementById('trainingContainer');
-  container.innerHTML = ['back','leg','chest'].map(day=>{
-    return `<div class="dayview ${day===currentDay?'active':''}" id="dv-${day}">
-      ${exercisesHtml(day)}
-      <div class="btn-row" style="margin:14px 0;">
-        <button class="btn btn-primary" onclick="finishWorkout('${day}')">完成本次訓練，存入紀錄</button>
-      </div>
-      <div class="btn-row" style="margin-bottom:18px;">
-        <button class="btn btn-ghost" onclick="clearDay('${day}')">清空本頁重填</button>
-      </div>
-      <div class="section-title"><div class="bar"></div><h2>${DAY_LABEL[day]}歷史紀錄</h2></div>
-      <div id="hist-${day}"></div>
-    </div>`;
-  }).join('');
-  renderAllSetInputs();
-  renderAllWorkoutHistory();
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=> setData(WORKOUT_KEY, workoutState), 400);
 }
 
-function exercisesHtml(day){
-  const draft = getDraft()[day];
-  return EXERCISES[day].map((ex, exi)=>{
-    const rows = Array.from({length:ex.sets}, (_,si)=>{
-      const s = draft[exi][si];
-      return `<div class="set-row ${s.done?'done':''}" id="row-${day}-${exi}-${si}">
-        <div class="setno">${si+1}</div>
-        <input type="number" placeholder="重量kg" step="0.5" value="${s.w}"
-          onchange="updateSet('${day}',${exi},${si},'w',this.value)">
-        <input type="number" placeholder="次數" value="${s.r}"
-          onchange="updateSet('${day}',${exi},${si},'r',this.value)">
-        <div class="chk-wrap">
-          <input type="checkbox" ${s.done?'checked':''} onchange="toggleSet('${day}',${exi},${si},this.checked)">
+function renderExercises(){
+  const container = document.getElementById('exercise-list');
+  const plan = WORKOUT_PLAN[currentDay];
+  container.innerHTML = plan.exercises.map((ex, exIdx)=>{
+    const sets = workoutState[currentDay][exIdx];
+    const rows = sets.map((s, setIdx)=>`
+      <tr class="${s.done ? 'set-done':''}" data-ex="${exIdx}" data-set="${setIdx}">
+        <td class="set-num">${setIdx+1}</td>
+        <td><input type="number" inputmode="decimal" class="in-w" value="${s.w}" placeholder="kg"></td>
+        <td><input type="number" inputmode="numeric" class="in-r" value="${s.r}" placeholder="次"></td>
+        <td><input type="number" inputmode="numeric" class="in-rir" value="${s.rir}" placeholder="RIR"></td>
+        <td class="chk-cell"><input type="checkbox" class="chk" ${s.done ? 'checked':''}></td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="exercise-card" data-exname="${exIdx}">
+        <div class="exercise-head">
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-target">${ex.sets}組 · ${ex.target}</div>
         </div>
-      </div>`;
-    }).join('');
-    return `<div class="ex-card">
-      <div class="ex-head">
-        <div class="name">${ex.name}</div>
-        <div class="suggest">建議 ${ex.sets}組 × ${ex.reps}下</div>
+        <table class="set-table">
+          <thead><tr><th>組</th><th>重量kg</th><th>次數</th><th>RIR</th><th>完成</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
       </div>
-      <div class="grid-lbl"><span></span><span>重量</span><span>次數</span><span>完成</span></div>
-      ${rows}
-    </div>`;
+    `;
   }).join('');
-}
 
-function renderAllSetInputs(){ /* handled at render time via exercisesHtml */ }
+  // wire up inputs
+  container.querySelectorAll('.exercise-card').forEach(card=>{
+    const exIdx = card.dataset.exname;
+    card.querySelectorAll('tbody tr').forEach(row=>{
+      const setIdx = row.dataset.set;
+      const wInput = row.querySelector('.in-w');
+      const rInput = row.querySelector('.in-r');
+      const rirInput = row.querySelector('.in-rir');
+      const chk = row.querySelector('.chk');
 
-function updateSet(day, exi, si, field, val){
-  const d = getDraft();
-  d[day][exi][si][field] = val;
-  saveDraft(d);
-}
+      wInput.addEventListener('input', ()=>{ workoutState[currentDay][exIdx][setIdx].w = wInput.value; scheduleSave(); });
+      rInput.addEventListener('input', ()=>{ workoutState[currentDay][exIdx][setIdx].r = rInput.value; scheduleSave(); });
+      rirInput.addEventListener('input', ()=>{ workoutState[currentDay][exIdx][setIdx].rir = rirInput.value; scheduleSave(); });
 
-function toggleSet(day, exi, si, checked){
-  const d = getDraft();
-  d[day][exi][si].done = checked;
-  saveDraft(d);
-  const row = document.getElementById(`row-${day}-${exi}-${si}`);
-  if(row) row.classList.toggle('done', checked);
-  if(checked){
-    startRest(90);
-  }
-}
-
-function clearDay(day){
-  if(!confirm('確定清空「'+DAY_LABEL[day]+'」目前輸入的重量與次數？')) return;
-  const d = getDraft();
-  d[day] = emptyDraftFor(day);
-  saveDraft(d);
-  renderTrainingContainer();
-  switchDay(day);
-}
-
-function finishWorkout(day){
-  const draft = getDraft()[day];
-  const hasAny = draft.some(sets => sets.some(s=>s.done));
-  if(!hasAny){
-    showToast('至少完成一組再儲存喔');
-    return;
-  }
-  const record = {
-    id: Date.now(),
-    date: todayStr(),
-    day: day,
-    exercises: EXERCISES[day].map((ex, exi)=>({
-      name: ex.name,
-      sets: draft[exi].filter(s=>s.done).map(s=>({w:s.w||'-', r:s.r||'-'}))
-    })).filter(e=>e.sets.length>0)
-  };
-  let history = loadLS(WORKOUT_KEY, []);
-  history.push(record);
-  saveLS(WORKOUT_KEY, history);
-  renderAllWorkoutHistory();
-  showToast(DAY_LABEL[day]+' 已存入訓練紀錄！');
-}
-
-function renderAllWorkoutHistory(){
-  ['back','leg','chest'].forEach(day=>{
-    const el = document.getElementById('hist-'+day);
-    if(!el) return;
-    const history = loadLS(WORKOUT_KEY, []).filter(h=>h.day===day).sort((a,b)=>b.id-a.id);
-    if(history.length===0){
-      el.innerHTML = '<div class="empty-note">尚無歷史紀錄</div>';
-      return;
-    }
-    el.innerHTML = history.map(h=>{
-      const lines = h.exercises.map(e=>{
-        const setsTxt = e.sets.map(s=>`${s.w}kg×${s.r}`).join('、');
-        return `<div class="hist-ex-line"><b>${e.name}</b>：${setsTxt}</div>`;
-      }).join('');
-      return `<details class="hist-block">
-        <summary>${fmtDate(h.date)} <span class="arr">▾ 查看詳情 / <a href="#" onclick="event.preventDefault();event.stopPropagation();deleteWorkout(${h.id})" style="color:var(--red);">刪除</a></span></summary>
-        <div class="hist-body">${lines}</div>
-      </details>`;
-    }).join('');
+      chk.addEventListener('change', ()=>{
+        workoutState[currentDay][exIdx][setIdx].done = chk.checked;
+        row.classList.toggle('set-done', chk.checked);
+        scheduleSave();
+        if(chk.checked) startRestTimer(90, `${WORKOUT_PLAN[currentDay].exercises[exIdx].name} · 第${parseInt(setIdx)+1}組完成`);
+      });
+    });
   });
 }
 
-function deleteWorkout(id){
-  if(!confirm('確定刪除這筆訓練紀錄？')) return;
-  let history = loadLS(WORKOUT_KEY, []);
-  history = history.filter(h=>h.id!==id);
-  saveLS(WORKOUT_KEY, history);
-  renderAllWorkoutHistory();
-}
+document.querySelectorAll('.day-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDay = btn.dataset.day;
+    renderExercises();
+  });
+});
 
-/* ---------- 休息計時器 ---------- */
-let restTimerInterval = null;
+/* ---- rest timer ---- */
+let restInterval = null;
 let restRemaining = 90;
 let restTotal = 90;
 
-function startRest(seconds){
-  clearInterval(restTimerInterval);
-  restTotal = seconds;
+function beep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([200,80,200]);
+}
+
+function updateRestDisplay(){
+  const m = Math.floor(restRemaining/60).toString().padStart(2,'0');
+  const s = (restRemaining%60).toString().padStart(2,'0');
+  document.getElementById('rest-time').textContent = `${m}:${s}`;
+  document.getElementById('rest-progress-bar').style.width = `${(restRemaining/restTotal)*100}%`;
+}
+
+function startRestTimer(seconds, label){
+  clearInterval(restInterval);
   restRemaining = seconds;
-  updateRestUI();
-  document.getElementById('restTimer').classList.add('show');
-  document.getElementById('rtStatus').textContent = '休息中';
-  restTimerInterval = setInterval(()=>{
+  restTotal = seconds;
+  document.getElementById('rest-label').textContent = label || '組間休息中';
+  document.getElementById('rest-bar').classList.add('show');
+  updateRestDisplay();
+  restInterval = setInterval(()=>{
     restRemaining--;
-    if(restRemaining<=0){
-      restRemaining = 0;
-      updateRestUI();
-      clearInterval(restTimerInterval);
-      document.getElementById('rtStatus').textContent = '可以開始下一組！';
+    if(restRemaining <= 0){
+      clearInterval(restInterval);
+      updateRestDisplay();
+      beep();
+      setTimeout(()=> document.getElementById('rest-bar').classList.remove('show'), 700);
       return;
     }
-    updateRestUI();
+    updateRestDisplay();
   }, 1000);
 }
-function updateRestUI(){
-  const countEl = document.getElementById('rtCount');
-  countEl.textContent = restRemaining;
-  countEl.classList.toggle('warn', restRemaining<=10);
-  const pct = Math.max(0, (restRemaining/restTotal)*100);
-  document.getElementById('rtFill').style.width = pct+'%';
-}
-function adjustRest(delta){
-  restRemaining = Math.max(0, restRemaining+delta);
-  if(restRemaining > restTotal) restTotal = restRemaining;
-  updateRestUI();
-}
-function stopRest(){
-  clearInterval(restTimerInterval);
-  document.getElementById('restTimer').classList.remove('show');
+
+document.getElementById('rest-minus').addEventListener('click', ()=>{
+  restRemaining = Math.max(0, restRemaining - 15);
+  updateRestDisplay();
+});
+document.getElementById('rest-skip').addEventListener('click', ()=>{
+  clearInterval(restInterval);
+  document.getElementById('rest-bar').classList.remove('show');
+});
+
+async function initWorkout(){
+  workoutState = await getData(WORKOUT_KEY, {});
+  ensureWorkoutState();
+  renderExercises();
 }
 
 /* =========================================================
-   TAB 3：營養計劃
-========================================================= */
-const NUTRI = {
-  train:{
-    kcal:2285,
-    items:[
-      {name:'全穀雜糧類（碳水）', serv:'10份', kcalSub:'約700kcal', foods:[
-        ['白飯','1/4碗＝40g，一整碗160g＝4份'],
-        ['地瓜','約55g（半根）'],
-        ['全麥吐司','1片（30g）'],
-        ['燕麥片(乾)','20g'],
-        ['玉米粒','85g']
-      ]},
-      {name:'豆魚蛋肉類（蛋白質）', serv:'17份', kcalSub:'約1275kcal・約119g蛋白質', foods:[
-        ['雞蛋','1顆（55g）'],
-        ['雞胸肉(生)','30g'],
-        ['鮭魚','35g'],
-        ['豬里肌肉','35g'],
-        ['板豆腐','3格（80g）']
-      ]},
-      {name:'蔬菜類', serv:'6-8份', kcalSub:'約175kcal（以7份估算）', foods:[
-        ['花椰菜','100g'],
-        ['菠菜','100g'],
-        ['高麗菜','100g'],
-        ['小黃瓜','100g']
-      ]},
-      {name:'油脂類', serv:'3份', kcalSub:'約135kcal', foods:[
-        ['橄欖油','1茶匙（5g）'],
-        ['酪梨','1/5顆（30g）'],
-        ['腰果','5顆（8g）']
-      ]},
-    ]
+   PAGE 3 — NUTRITION
+   ========================================================= */
+const NUTRITION_PLAN = {
+  training: {
+    carbServ: 10, proteinServ: 17, vegServ: '6–8', vegAvg: 7,
   },
-  rest:{
-    kcal:1855,
-    items:[
-      {name:'全穀雜糧類（碳水）', serv:'6份', kcalSub:'約420kcal', foods:[
-        ['白飯','1/4碗＝40g'],
-        ['地瓜','約55g（半根）'],
-        ['全麥吐司','1片（30g）']
-      ]},
-      {name:'豆魚蛋肉類（蛋白質）', serv:'15份', kcalSub:'約1125kcal・約105g蛋白質', foods:[
-        ['雞蛋','1顆（55g）'],
-        ['雞胸肉(生)','30g'],
-        ['鮭魚','35g'],
-        ['板豆腐','3格（80g）']
-      ]},
-      {name:'蔬菜類', serv:'6-8份', kcalSub:'約175kcal（以7份估算）', foods:[
-        ['花椰菜','100g'],
-        ['番茄(小)','100g'],
-        ['高麗菜','100g']
-      ]},
-      {name:'油脂類', serv:'3份', kcalSub:'約135kcal', foods:[
-        ['苦茶油','1茶匙（5g）'],
-        ['花生醬','1茶匙（8g）'],
-        ['堅果','約5顆（8g）']
-      ]},
-    ]
+  rest: {
+    carbServ: 6, proteinServ: 15, vegServ: '6–8', vegAvg: 7,
   }
 };
-let currentNutri = 'train';
 
-function switchNutri(mode){
-  currentNutri = mode;
-  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.mode===mode));
-  renderNutri();
+const SERVING = {
+  carb:   { kcal:70, carb:15, protein:2, fat:0 },
+  protein:{ kcal:75, carb:0,  protein:7, fat:5 },
+  veg:    { kcal:25, carb:5,  protein:1, fat:0 }
+};
+
+const FOOD_EXAMPLES = {
+  carb: ['白飯40g(約1/4碗)', '全麥吐司1片(30g)', '地瓜(蒸)55g', '玉米半根(85g)', '燕麥片20g(3湯匙)', '冬粉(乾)15g'],
+  protein: ['雞蛋1顆', '雞胸肉35g(生)', '鮭魚35g', '板豆腐80g(3格)', '黃豆(乾)20g', '牛肉/豬里肌35g', '毛豆50g'],
+  veg: ['菠菜100g', '地瓜葉100g', '花椰菜100g', '青江菜100g', '大番茄100g', '甜椒100g', '生菜100g']
+};
+
+function calcPlan(planKey){
+  const p = NUTRITION_PLAN[planKey];
+  const kcal = p.carbServ*SERVING.carb.kcal + p.proteinServ*SERVING.protein.kcal + p.vegAvg*SERVING.veg.kcal;
+  const proteinG = p.carbServ*SERVING.carb.protein + p.proteinServ*SERVING.protein.protein + p.vegAvg*SERVING.veg.protein;
+  const carbG = p.carbServ*SERVING.carb.carb + p.vegAvg*SERVING.veg.carb;
+  const fatG = p.proteinServ*SERVING.protein.fat;
+  return { kcal: Math.round(kcal), proteinG: Math.round(proteinG), carbG: Math.round(carbG), fatG: Math.round(fatG), ...p };
 }
 
-function renderNutri(){
-  const data = NUTRI[currentNutri];
-  document.getElementById('nutriKcal').innerHTML = data.kcal + ' <span>kcal</span>';
-  document.getElementById('nutriMacros').innerHTML = data.items.map(it=>{
-    const foodLis = it.foods.map(f=>`<li>${f[0]} <span>${f[1]}</span></li>`).join('');
-    return `<div class="macro-card">
-      <div class="mc-top">
-        <div class="mc-name">${it.name}</div>
-        <div class="mc-serv num">${it.serv}</div>
+function renderNutrition(planKey){
+  const d = calcPlan(planKey);
+  const label = planKey === 'training' ? '訓練日' : '休息日';
+  const body = document.getElementById('nutrition-body');
+  body.innerHTML = `
+    <div class="kcal-hero">
+      <div class="kcal-num">${d.kcal}</div>
+      <div class="kcal-unit">大卡・${label}目標熱量（約估）</div>
+    </div>
+    <div class="macro-grid">
+      <div class="macro-box">
+        <div class="macro-name">碳水化合物</div>
+        <div class="macro-serv">${d.carbServ}份</div>
+        <div class="macro-detail">${d.carbG}g碳水</div>
       </div>
-      <div class="mc-kcal">${it.kcalSub}</div>
-      <details class="food-ex"><summary>食物範例</summary>
-        <ul class="food-list">${foodLis}</ul>
-      </details>
-    </div>`;
-  }).join('');
+      <div class="macro-box">
+        <div class="macro-name">蛋白質</div>
+        <div class="macro-serv">${d.proteinServ}份</div>
+        <div class="macro-detail">${d.proteinG}g蛋白質</div>
+      </div>
+      <div class="macro-box">
+        <div class="macro-name">蔬菜</div>
+        <div class="macro-serv">${d.vegServ}份</div>
+        <div class="macro-detail">約${d.vegAvg*100}g生重</div>
+      </div>
+    </div>
 
-  document.getElementById('nutriNote').innerHTML =
-    `<b>換算依據</b>：份量對照衛福部食物代換表估算（碳水1份15g醣約70kcal、蛋白質1份以中脂估算約75kcal、蔬菜1份約25kcal、油脂1份約45kcal）。若選用低脂蛋白來源（如雞胸肉、蛋白），整體熱量與脂肪會再更低。以上為估算值，請依照每週體脂／骨骼肌變化持續微調份量。`;
+    <div class="card">
+      <div class="food-cat">
+        <h4>全穀雜糧類 · 每份約70大卡</h4>
+        <div class="food-list">${FOOD_EXAMPLES.carb.map(f=>`<span class="food-chip">${f}</span>`).join('')}</div>
+      </div>
+      <div class="food-cat">
+        <h4>豆魚蛋肉類 · 每份約75大卡</h4>
+        <div class="food-list">${FOOD_EXAMPLES.protein.map(f=>`<span class="food-chip">${f}</span>`).join('')}</div>
+      </div>
+      <div class="food-cat">
+        <h4>蔬菜類 · 每份約25大卡</h4>
+        <div class="food-list">${FOOD_EXAMPLES.veg.map(f=>`<span class="food-chip">${f}</span>`).join('')}</div>
+      </div>
+    </div>
+  `;
 }
 
-/* =========================================================
-   初始化
-========================================================= */
-document.getElementById('inDate').value = todayStr();
-seedBodyIfEmpty();
-renderBody();
-renderTrainingContainer();
-renderNutri();
+document.querySelectorAll('.nutri-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nutri-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderNutrition(btn.dataset.plan);
+  });
+});
+
+/* ---------------- init ---------------- */
+initMetrics();
+initWorkout();
+renderNutrition('training');
+
+})();
 </script>
 </body>
 </html>

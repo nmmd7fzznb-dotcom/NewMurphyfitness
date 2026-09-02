@@ -247,6 +247,11 @@
   .macro-box .macro-serv{font-family:var(--font-mono); font-size:19px; font-weight:700; color:var(--lime);}
   .macro-box .macro-detail{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-top:3px;}
 
+  .macro-box .progress-track{height:6px; background:var(--bg-raised); border-radius:3px; margin-top:9px; overflow:hidden;}
+  .macro-box .progress-fill{height:100%; background:var(--lime-dim); transition:width .25s ease;}
+  .macro-box .progress-fill.full{background:var(--lime);}
+  .macro-box .progress-note{font-family:var(--font-mono); font-size:10px; color:var(--text-faint); margin-top:5px;}
+
   .food-cat{margin-bottom:12px;}
   .food-cat h4{font-size:13px; margin:0 0 8px; color:var(--lime-dim); font-weight:700;}
   .food-list{display:flex; flex-wrap:wrap; gap:7px;}
@@ -765,9 +770,33 @@ function calcPlan(planKey){
   return { kcal: Math.round(kcal), proteinG: Math.round(proteinG), carbG: Math.round(carbG), fatG: Math.round(fatG), ...p };
 }
 
+const NUTRI_LOG_KEY = 'nutrition-log-v1';
+let nutritionLog = [];
+let currentPlan = 'training';
+let nutriDate = todayStr();
+
+function findNutriEntry(date, plan){
+  return nutritionLog.find(e => e.date === date && e.plan === plan);
+}
+
+function progressBar(done, target){
+  const pct = target > 0 ? Math.min(100, Math.round((done/target)*100)) : 0;
+  const cls = pct >= 100 ? 'full' : '';
+  return `
+    <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pct}%;"></div></div>
+    <div class="progress-note">已完成 ${done} / ${target} 份</div>
+  `;
+}
+
 function renderNutrition(planKey){
+  currentPlan = planKey;
   const d = calcPlan(planKey);
   const label = planKey === 'training' ? '訓練日' : '休息日';
+  const entry = findNutriEntry(nutriDate, planKey);
+  const carbDone = entry ? entry.carbDone : 0;
+  const proteinDone = entry ? entry.proteinDone : 0;
+  const vegDone = entry ? entry.vegDone : 0;
+
   const body = document.getElementById('nutrition-body');
   body.innerHTML = `
     <div class="kcal-hero">
@@ -779,17 +808,41 @@ function renderNutrition(planKey){
         <div class="macro-name">碳水化合物</div>
         <div class="macro-serv">${d.carbServ}份</div>
         <div class="macro-detail">${d.carbG}g碳水</div>
+        ${progressBar(carbDone, d.carbServ)}
       </div>
       <div class="macro-box">
         <div class="macro-name">蛋白質</div>
         <div class="macro-serv">${d.proteinServ}份</div>
         <div class="macro-detail">${d.proteinG}g蛋白質</div>
+        ${progressBar(proteinDone, d.proteinServ)}
       </div>
       <div class="macro-box">
         <div class="macro-name">蔬菜</div>
         <div class="macro-serv">${d.vegServ}份</div>
         <div class="macro-detail">約${d.vegAvg*100}g生重</div>
+        ${progressBar(vegDone, d.vegAvg)}
       </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin:0 0 12px; font-size:13px; color:var(--lime-dim);">記錄今日已完成份數（${label}）</h4>
+      <div class="form-row">
+        <div class="field"><label>日期</label><input type="date" id="nutri-date" value="${nutriDate}"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>碳水 (份)</label><input type="number" step="0.5" min="0" id="nutri-carb" value="${carbDone}"></div>
+        <div class="field"><label>蛋白質 (份)</label><input type="number" step="0.5" min="0" id="nutri-protein" value="${proteinDone}"></div>
+        <div class="field"><label>蔬菜 (份)</label><input type="number" step="0.5" min="0" id="nutri-veg" value="${vegDone}"></div>
+      </div>
+      <button class="btn block" id="btn-save-nutri">儲存今日進度</button>
+    </div>
+
+    <div class="card">
+      <table class="log-table" id="nutri-table">
+        <thead><tr><th>日期</th><th>類型</th><th>碳水</th><th>蛋白質</th><th>蔬菜</th><th></th></tr></thead>
+        <tbody id="nutri-tbody"></tbody>
+      </table>
+      <div class="empty-note" id="nutri-empty" style="display:none;">還沒有紀錄，填寫上方表單開始追蹤。</div>
     </div>
 
     <div class="card">
@@ -807,6 +860,57 @@ function renderNutrition(planKey){
       </div>
     </div>
   `;
+
+  document.getElementById('nutri-date').addEventListener('change', (e)=>{
+    nutriDate = e.target.value || todayStr();
+    renderNutrition(currentPlan);
+  });
+
+  document.getElementById('btn-save-nutri').addEventListener('click', async ()=>{
+    const carbDoneVal = parseFloat(document.getElementById('nutri-carb').value) || 0;
+    const proteinDoneVal = parseFloat(document.getElementById('nutri-protein').value) || 0;
+    const vegDoneVal = parseFloat(document.getElementById('nutri-veg').value) || 0;
+    nutritionLog = nutritionLog.filter(e => !(e.date === nutriDate && e.plan === currentPlan));
+    nutritionLog.push({
+      id: Date.now().toString(), date: nutriDate, plan: currentPlan,
+      carbDone: carbDoneVal, proteinDone: proteinDoneVal, vegDone: vegDoneVal
+    });
+    await setData(NUTRI_LOG_KEY, nutritionLog);
+    renderNutrition(currentPlan);
+  });
+
+  renderNutriTable();
+}
+
+function renderNutriTable(){
+  const tbody = document.getElementById('nutri-tbody');
+  const emptyNote = document.getElementById('nutri-empty');
+  if(!tbody) return;
+  const sorted = [...nutritionLog].sort((a,b)=> b.date.localeCompare(a.date));
+  if(sorted.length === 0){
+    tbody.innerHTML = '';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  emptyNote.style.display = 'none';
+  tbody.innerHTML = sorted.map(row => `
+    <tr>
+      <td>${row.date}</td>
+      <td>${row.plan === 'training' ? '訓練日' : '休息日'}</td>
+      <td>${row.carbDone}份</td>
+      <td>${row.proteinDone}份</td>
+      <td>${row.vegDone}份</td>
+      <td><button class="btn danger-outline small" data-nutri-del="${row.id}">刪除</button></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('[data-nutri-del]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      nutritionLog = nutritionLog.filter(r => r.id !== b.dataset.nutriDel);
+      await setData(NUTRI_LOG_KEY, nutritionLog);
+      renderNutrition(currentPlan);
+    });
+  });
 }
 
 document.querySelectorAll('.nutri-btn').forEach(btn=>{
@@ -817,10 +921,15 @@ document.querySelectorAll('.nutri-btn').forEach(btn=>{
   });
 });
 
+async function initNutrition(){
+  nutritionLog = await getData(NUTRI_LOG_KEY, []);
+  renderNutrition('training');
+}
+
 /* ---------------- init ---------------- */
 initMetrics();
 initWorkout();
-renderNutrition('training');
+initNutrition();
 
 })();
 </script>

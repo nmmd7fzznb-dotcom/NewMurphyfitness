@@ -210,6 +210,17 @@
 
   .exercise-foot{padding:8px 14px 14px; display:flex; justify-content:flex-end;}
 
+  .session-entry{
+    border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px;
+    background:var(--bg-raised);
+  }
+  .session-entry .session-date{
+    font-family:var(--font-mono); font-size:12px; color:var(--lime); font-weight:700; margin-bottom:6px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .session-entry .session-ex{font-size:12px; color:var(--text-dim); margin-bottom:3px; line-height:1.5;}
+  .session-entry .session-ex b{color:var(--text); font-weight:600;}
+
   #rest-bar{
     position:fixed; left:0; right:0; bottom:0; z-index:100;
     background:var(--bg-raised); border-top:1px solid var(--lime);
@@ -339,6 +350,14 @@
     </div>
 
     <div id="exercise-list"></div>
+
+    <button class="btn block" id="btn-finish-workout" style="margin-bottom:14px;">✅ 完成今日訓練，儲存並清空表格</button>
+
+    <div class="card">
+      <h4 style="margin:0 0 10px; font-size:13px; color:var(--lime-dim);">本日訓練紀錄</h4>
+      <div id="workout-history-list"></div>
+      <div class="empty-note" id="workout-history-empty" style="display:none;">還沒有完成過這個訓練日，練完後按上面的按鈕存檔。</div>
+    </div>
   </section>
 
   <!-- ============ PAGE 3: NUTRITION ============ -->
@@ -671,7 +690,78 @@ document.querySelectorAll('.day-btn').forEach(btn=>{
     btn.classList.add('active');
     currentDay = btn.dataset.day;
     renderExercises();
+    renderWorkoutHistory();
   });
+});
+
+/* ---- finish workout: save a session record, then clear the sheet for next time ---- */
+const WORKOUT_HISTORY_KEY = 'workout-history-v1';
+let workoutHistory = [];
+
+function buildSessionSnapshot(dayKey){
+  const plan = WORKOUT_PLAN[dayKey];
+  return plan.exercises.map((ex, exIdx)=>{
+    const sets = workoutState[dayKey][exIdx]
+      .filter(s => s.w !== '' || s.r !== '' || s.rir !== '')
+      .map(s => `${s.w || '-'}×${s.r || '-'}@RIR${s.rir || '-'}`);
+    return { name: ex.name, sets };
+  }).filter(ex => ex.sets.length > 0);
+}
+
+function renderWorkoutHistory(){
+  const list = document.getElementById('workout-history-list');
+  const empty = document.getElementById('workout-history-empty');
+  const entries = workoutHistory.filter(h => h.day === currentDay).sort((a,b)=> b.date.localeCompare(a.date));
+  if(entries.length === 0){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = entries.map(h => `
+    <div class="session-entry">
+      <div class="session-date">${h.date}<button class="btn danger-outline small" data-hist-del="${h.id}">刪除</button></div>
+      ${h.exercises.map(ex => `<div class="session-ex"><b>${ex.name}</b>：${ex.sets.join('、')}</div>`).join('')}
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-hist-del]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      workoutHistory = workoutHistory.filter(h => h.id !== b.dataset.histDel);
+      await setData(WORKOUT_HISTORY_KEY, workoutHistory);
+      renderWorkoutHistory();
+    });
+  });
+}
+
+document.getElementById('btn-finish-workout').addEventListener('click', async ()=>{
+  const snapshot = buildSessionSnapshot(currentDay);
+  if(snapshot.length === 0){
+    alert('這次還沒有填入任何重量／次數，練完再存檔喔！');
+    return;
+  }
+  workoutHistory.push({
+    id: Date.now().toString(),
+    date: todayStr(),
+    day: currentDay,
+    exercises: snapshot
+  });
+  await setData(WORKOUT_HISTORY_KEY, workoutHistory);
+
+  // reset the sheet for next session — keep last weight as a reference, clear reps/RIR/done
+  WORKOUT_PLAN[currentDay].exercises.forEach((ex, exIdx)=>{
+    workoutState[currentDay][exIdx] = workoutState[currentDay][exIdx].map(s => ({
+      w: s.w, r: '', rir: '', done: false
+    }));
+  });
+  await setData(WORKOUT_KEY, workoutState);
+
+  clearInterval(restInterval);
+  document.getElementById('rest-bar').classList.remove('show');
+
+  renderExercises();
+  renderWorkoutHistory();
+  alert('本次訓練已儲存！重量已保留參考，次數與RIR已清空，下次開練直接填新的數字。');
 });
 
 /* ---- rest timer ---- */
@@ -733,7 +823,9 @@ document.getElementById('rest-skip').addEventListener('click', ()=>{
 async function initWorkout(){
   workoutState = await getData(WORKOUT_KEY, {});
   ensureWorkoutState();
+  workoutHistory = await getData(WORKOUT_HISTORY_KEY, []);
   renderExercises();
+  renderWorkoutHistory();
 }
 
 /* =========================================================

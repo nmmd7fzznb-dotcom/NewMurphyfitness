@@ -210,6 +210,32 @@
 
   .exercise-foot{padding:8px 14px 14px; display:flex; justify-content:flex-end;}
 
+  .ex-tag{
+    font-size:10px; color:var(--lime-dim); border:1px solid var(--lime-dim); border-radius:10px;
+    padding:2px 7px; margin-left:8px; font-weight:600; white-space:nowrap;
+  }
+  .superset-badge{
+    font-size:10px; background:var(--lime); color:#0a0f0c; border-radius:10px;
+    padding:2px 8px; margin-left:8px; font-weight:800; white-space:nowrap;
+  }
+  .superset-note{
+    font-size:11px; color:var(--text-faint); padding:0 14px 10px; font-family:var(--font-mono); line-height:1.5;
+  }
+  .round-block{
+    border:1px solid var(--line); border-radius:8px; margin:0 14px 10px; padding:10px 12px;
+    background:var(--bg-raised);
+  }
+  .round-block.round-done{border-color:var(--lime-dim); background:rgba(200,255,61,0.06);}
+  .round-num{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-bottom:8px;}
+  .sub-ex{margin-bottom:6px;}
+  .sub-name{font-size:13px; font-weight:600;}
+  .sub-target{font-family:var(--font-mono); font-size:11px; color:var(--lime-dim); font-weight:400; margin-left:4px;}
+  .sub-inputs{display:flex; gap:6px; margin-top:6px;}
+  .sub-inputs input{flex:1; padding:7px 4px; text-align:center; font-size:13px;}
+  .sub-arrow{text-align:center; font-size:11px; color:var(--lime-dim); margin:2px 0 10px;}
+  .round-done-row{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim); margin-top:6px;}
+  .round-done-row input{width:20px; height:20px; accent-color:var(--lime); cursor:pointer;}
+
   .session-entry{
     border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px;
     background:var(--bg-raised);
@@ -345,8 +371,8 @@
 
     <div class="day-tabs" id="day-tabs">
       <button class="day-btn active" data-day="day1">Day 1<small>背・肩・二頭</small></button>
-      <button class="day-btn" data-day="day2">Day 2<small>腿・胸・肩</small></button>
-      <button class="day-btn" data-day="day3">Day 3<small>胸・背・肩・手臂</small></button>
+      <button class="day-btn" data-day="day2">Day 2<small>腿・胸・三頭</small></button>
+      <button class="day-btn" data-day="day3">Day 3<small>腿・背・肩</small></button>
     </div>
 
     <div id="exercise-list"></div>
@@ -572,35 +598,50 @@ const WORKOUT_KEY = 'workout-state-v1';
 const WORKOUT_PLAN = {
   day1: {
     label: '背＋肩＋二頭',
-    exercises: [
-      { name:'輔助引體向上', sets:3, target:'6–10下 · RIR1–2' },
-      { name:'X 型下拉',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'滑輪坐姿划船', sets:3, target:'8–12下 · RIR1–2' },
-      { name:'啞鈴肩推',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'側平舉',       sets:4, target:'12–20下 · RIR1–2' },
-      { name:'二頭彎舉',     sets:3, target:'8–12下 · RIR1–2' },
+    blocks: [
+      { type:'single', name:'輔助引體向上', note:'暖身', sets:2, setsLabel:'1–2組', target:'5–8下 · RIR4–5' },
+      { type:'single', name:'X 型下拉', sets:3, setsLabel:'3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'坐姿划船', sets:3, setsLabel:'3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'窄握滑輪下拉', sets:3, setsLabel:'2–3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'啞鈴肩推', sets:3, setsLabel:'3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'器材單手後飛鳥', sets:3, setsLabel:'3組', target:'12–15下/側 · RIR1–2' },
+      { type:'single', name:'二頭彎舉', sets:3, setsLabel:'3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'輔助引體向上', note:'力竭收尾', sets:1, setsLabel:'1組', target:'盡可能多下 · RIR0', repsPlaceholder:'AMRAP' },
     ]
   },
   day2: {
-    label: '腿＋胸＋肩',
-    exercises: [
-      { name:'羅馬尼亞硬舉',   sets:3, target:'8–10下 · RIR2' },
-      { name:'保加利亞分腿蹲', sets:3, target:'8–12下/側 · RIR1–2' },
-      { name:'高腳杯深蹲',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'槓鈴臥推',       sets:4, target:'6–10下 · RIR1–2' },
-      { name:'側平舉',         sets:3, target:'12–20下 · RIR1–2' },
+    label: '腿＋胸＋三頭',
+    blocks: [
+      { type:'single', name:'槓鈴硬舉', sets:3, setsLabel:'3組', target:'5–8下 · RIR2' },
+      { type:'single', name:'單腳硬舉', sets:3, setsLabel:'3組', target:'8–12下/側 · RIR1–2' },
+      { type:'single', name:'槓鈴臥推', sets:4, setsLabel:'4組', target:'6–10下 · RIR1–2' },
+      { type:'single', name:'啞鈴上斜臥推', sets:3, setsLabel:'3組', target:'8–12下 · RIR1–2' },
+      { type:'single', name:'腿內收', sets:3, setsLabel:'2–3組', target:'12–20下 · RIR1–2' },
+      { type:'single', name:'三頭平槓過頭伸展', sets:3, setsLabel:'3組', target:'10–15下 · RIR1–2' },
     ]
   },
   day3: {
-    label: '胸＋背＋肩＋手臂',
-    exercises: [
-      { name:'啞鈴上斜臥推', sets:3, target:'8–12下 · RIR1–2' },
-      { name:'器械水平划船', sets:3, target:'8–12下 · RIR1–2' },
-      { name:'滑輪下拉',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'啞鈴肩推',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'側平舉',       sets:4, target:'12–20下 · RIR1–2' },
-      { name:'二頭彎舉',     sets:3, target:'8–12下 · RIR1–2' },
-      { name:'三頭過頭伸展', sets:3, target:'10–15下 · RIR1–2' },
+    label: '腿＋背＋肩',
+    blocks: [
+      { type:'single', name:'保加利亞分腿蹲', sets:3, setsLabel:'3組', target:'8–12下/側 · RIR1–2' },
+      {
+        type:'superset', label:'腿推機 → 高腳杯深蹲', sets:3, restSeconds:150,
+        note:'做完兩個動作才算1組',
+        exercises:[
+          { name:'腿推機', target:'10–15下 · RIR2' },
+          { name:'高腳杯深蹲', target:'8–15下 · RIR1–2' }
+        ]
+      },
+      { type:'single', name:'單手高位下拉', sets:3, setsLabel:'3組', target:'8–12下/側 · RIR1–2' },
+      { type:'single', name:'單手器械水平划船／單手啞鈴划船', sets:3, setsLabel:'3組', target:'8–12下/側 · RIR1–2' },
+      {
+        type:'superset', label:'前平舉 → 側平舉', sets:3, restSeconds:150,
+        note:'做完兩個動作才算1組',
+        exercises:[
+          { name:'前平舉', target:'10–15下 · RIR2' },
+          { name:'側平舉', target:'12–20下 · RIR1–2' }
+        ]
+      },
     ]
   }
 };
@@ -610,17 +651,20 @@ let currentDay = 'day1';
 let saveTimer = null;
 
 function emptySet(){ return { w:'', r:'', rir:'', done:false }; }
+function emptySuperRound(){ return { aw:'', ar:'', arir:'', bw:'', br:'', brir:'', done:false }; }
 
 function ensureWorkoutState(){
   Object.keys(WORKOUT_PLAN).forEach(dayKey=>{
     if(!workoutState[dayKey]) workoutState[dayKey] = {};
-    WORKOUT_PLAN[dayKey].exercises.forEach((ex, exIdx)=>{
-      if(!workoutState[dayKey][exIdx]){
-        workoutState[dayKey][exIdx] = Array.from({length: ex.sets}, emptySet);
+    WORKOUT_PLAN[dayKey].blocks.forEach((block, idx)=>{
+      const isSuper = block.type === 'superset';
+      const maker = isSuper ? emptySuperRound : emptySet;
+      const arr = workoutState[dayKey][idx];
+      const shapeOk = arr && arr.length > 0 ? (isSuper === ('aw' in arr[0])) : true;
+      if(!arr || !shapeOk){
+        workoutState[dayKey][idx] = Array.from({length: block.sets}, maker);
       }else{
-        // pad/truncate if plan size changed
-        const arr = workoutState[dayKey][exIdx];
-        while(arr.length < ex.sets) arr.push(emptySet());
+        while(arr.length < block.sets) arr.push(maker());
       }
     });
   });
@@ -631,37 +675,81 @@ function scheduleSave(){
   saveTimer = setTimeout(()=> setData(WORKOUT_KEY, workoutState), 400);
 }
 
+function renderSingleCard(ex, exIdx){
+  const sets = workoutState[currentDay][exIdx];
+  const rows = sets.map((s, setIdx)=>`
+    <tr class="${s.done ? 'set-done':''}" data-ex="${exIdx}" data-set="${setIdx}">
+      <td class="set-num">${setIdx+1}</td>
+      <td><input type="number" inputmode="decimal" class="in-w" value="${s.w}" placeholder="kg"></td>
+      <td><input type="number" inputmode="numeric" class="in-r" value="${s.r}" placeholder="${ex.repsPlaceholder || '次'}"></td>
+      <td><input type="number" inputmode="numeric" class="in-rir" value="${s.rir}" placeholder="RIR"></td>
+      <td class="chk-cell"><input type="checkbox" class="chk" ${s.done ? 'checked':''}></td>
+    </tr>
+  `).join('');
+  const tag = ex.note ? `<span class="ex-tag">${ex.note}</span>` : '';
+
+  return `
+    <div class="exercise-card single-card" data-exname="${exIdx}">
+      <div class="exercise-head">
+        <div class="exercise-name">${ex.name}${tag}</div>
+        <div class="exercise-target">${ex.setsLabel} · ${ex.target}</div>
+      </div>
+      <table class="set-table">
+        <thead><tr><th>組</th><th>重量kg</th><th>次數</th><th>RIR</th><th>完成</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderSupersetCard(block, blockIdx){
+  const rounds = workoutState[currentDay][blockIdx];
+  const [exA, exB] = block.exercises;
+  const roundsHtml = rounds.map((r, ri)=>`
+    <div class="round-block ${r.done ? 'round-done':''}" data-round="${ri}">
+      <div class="round-num">第${ri+1}輪</div>
+      <div class="sub-ex">
+        <div class="sub-name">① ${exA.name}<span class="sub-target">${exA.target}</span></div>
+        <div class="sub-inputs">
+          <input type="number" inputmode="decimal" class="in-aw" value="${r.aw}" placeholder="kg">
+          <input type="number" inputmode="numeric" class="in-ar" value="${r.ar}" placeholder="次">
+          <input type="number" inputmode="numeric" class="in-arir" value="${r.arir}" placeholder="RIR">
+        </div>
+      </div>
+      <div class="sub-arrow">↓ 立即接</div>
+      <div class="sub-ex">
+        <div class="sub-name">② ${exB.name}<span class="sub-target">${exB.target}</span></div>
+        <div class="sub-inputs">
+          <input type="number" inputmode="decimal" class="in-bw" value="${r.bw}" placeholder="kg">
+          <input type="number" inputmode="numeric" class="in-br" value="${r.br}" placeholder="次">
+          <input type="number" inputmode="numeric" class="in-brir" value="${r.brir}" placeholder="RIR">
+        </div>
+      </div>
+      <label class="round-done-row"><input type="checkbox" class="chk-round" ${r.done ? 'checked':''}> 完成本輪（兩個動作都做完）</label>
+    </div>
+  `).join('');
+
+  return `
+    <div class="exercise-card superset-card" data-exname="${blockIdx}">
+      <div class="exercise-head">
+        <div class="exercise-name">${block.label}<span class="superset-badge">超級組</span></div>
+        <div class="exercise-target">${block.sets}組</div>
+      </div>
+      <div class="superset-note">${block.note} · 組間休息約${Math.round(block.restSeconds/60*10)/10}分鐘</div>
+      ${roundsHtml}
+    </div>
+  `;
+}
+
 function renderExercises(){
   const container = document.getElementById('exercise-list');
   const plan = WORKOUT_PLAN[currentDay];
-  container.innerHTML = plan.exercises.map((ex, exIdx)=>{
-    const sets = workoutState[currentDay][exIdx];
-    const rows = sets.map((s, setIdx)=>`
-      <tr class="${s.done ? 'set-done':''}" data-ex="${exIdx}" data-set="${setIdx}">
-        <td class="set-num">${setIdx+1}</td>
-        <td><input type="number" inputmode="decimal" class="in-w" value="${s.w}" placeholder="kg"></td>
-        <td><input type="number" inputmode="numeric" class="in-r" value="${s.r}" placeholder="次"></td>
-        <td><input type="number" inputmode="numeric" class="in-rir" value="${s.rir}" placeholder="RIR"></td>
-        <td class="chk-cell"><input type="checkbox" class="chk" ${s.done ? 'checked':''}></td>
-      </tr>
-    `).join('');
+  container.innerHTML = plan.blocks.map((block, idx)=>
+    block.type === 'superset' ? renderSupersetCard(block, idx) : renderSingleCard(block, idx)
+  ).join('');
 
-    return `
-      <div class="exercise-card" data-exname="${exIdx}">
-        <div class="exercise-head">
-          <div class="exercise-name">${ex.name}</div>
-          <div class="exercise-target">${ex.sets}組 · ${ex.target}</div>
-        </div>
-        <table class="set-table">
-          <thead><tr><th>組</th><th>重量kg</th><th>次數</th><th>RIR</th><th>完成</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    `;
-  }).join('');
-
-  // wire up inputs
-  container.querySelectorAll('.exercise-card').forEach(card=>{
+  // wire up normal exercise cards
+  container.querySelectorAll('.single-card').forEach(card=>{
     const exIdx = card.dataset.exname;
     card.querySelectorAll('tbody tr').forEach(row=>{
       const setIdx = row.dataset.set;
@@ -678,7 +766,33 @@ function renderExercises(){
         workoutState[currentDay][exIdx][setIdx].done = chk.checked;
         row.classList.toggle('set-done', chk.checked);
         scheduleSave();
-        if(chk.checked) startRestTimer(90, `${WORKOUT_PLAN[currentDay].exercises[exIdx].name} · 第${parseInt(setIdx)+1}組完成`);
+        if(chk.checked) startRestTimer(90, `${WORKOUT_PLAN[currentDay].blocks[exIdx].name} · 第${parseInt(setIdx)+1}組完成`);
+      });
+    });
+  });
+
+  // wire up superset cards
+  container.querySelectorAll('.superset-card').forEach(card=>{
+    const blockIdx = card.dataset.exname;
+    const fieldMap = { '.in-aw':'aw', '.in-ar':'ar', '.in-arir':'arir', '.in-bw':'bw', '.in-br':'br', '.in-brir':'brir' };
+    card.querySelectorAll('.round-block').forEach(rb=>{
+      const roundIdx = rb.dataset.round;
+      Object.keys(fieldMap).forEach(sel=>{
+        const input = rb.querySelector(sel);
+        input.addEventListener('input', ()=>{
+          workoutState[currentDay][blockIdx][roundIdx][fieldMap[sel]] = input.value;
+          scheduleSave();
+        });
+      });
+      const chk = rb.querySelector('.chk-round');
+      chk.addEventListener('change', ()=>{
+        workoutState[currentDay][blockIdx][roundIdx].done = chk.checked;
+        rb.classList.toggle('round-done', chk.checked);
+        scheduleSave();
+        if(chk.checked){
+          const block = WORKOUT_PLAN[currentDay].blocks[blockIdx];
+          startRestTimer(block.restSeconds || 150, `${block.label} · 第${parseInt(roundIdx)+1}輪完成`);
+        }
       });
     });
   });
@@ -700,11 +814,17 @@ let workoutHistory = [];
 
 function buildSessionSnapshot(dayKey){
   const plan = WORKOUT_PLAN[dayKey];
-  return plan.exercises.map((ex, exIdx)=>{
-    const sets = workoutState[dayKey][exIdx]
+  return plan.blocks.map((block, idx)=>{
+    if(block.type === 'superset'){
+      const rounds = workoutState[dayKey][idx]
+        .filter(r => r.aw !== '' || r.ar !== '' || r.bw !== '' || r.br !== '')
+        .map((r, i) => `第${i+1}輪 ${block.exercises[0].name} ${r.aw||'-'}×${r.ar||'-'}@RIR${r.arir||'-'} → ${block.exercises[1].name} ${r.bw||'-'}×${r.br||'-'}@RIR${r.brir||'-'}`);
+      return { name: block.label, sets: rounds };
+    }
+    const sets = workoutState[dayKey][idx]
       .filter(s => s.w !== '' || s.r !== '' || s.rir !== '')
       .map(s => `${s.w || '-'}×${s.r || '-'}@RIR${s.rir || '-'}`);
-    return { name: ex.name, sets };
+    return { name: block.name, sets };
   }).filter(ex => ex.sets.length > 0);
 }
 
@@ -748,11 +868,17 @@ document.getElementById('btn-finish-workout').addEventListener('click', async ()
   });
   await setData(WORKOUT_HISTORY_KEY, workoutHistory);
 
-  // reset the sheet for next session — keep last weight as a reference, clear reps/RIR/done
-  WORKOUT_PLAN[currentDay].exercises.forEach((ex, exIdx)=>{
-    workoutState[currentDay][exIdx] = workoutState[currentDay][exIdx].map(s => ({
-      w: s.w, r: '', rir: '', done: false
-    }));
+  // reset the sheet for next session — keep last weight(s) as reference, clear reps/RIR/done
+  WORKOUT_PLAN[currentDay].blocks.forEach((block, idx)=>{
+    if(block.type === 'superset'){
+      workoutState[currentDay][idx] = workoutState[currentDay][idx].map(r => ({
+        aw: r.aw, ar: '', arir: '', bw: r.bw, br: '', brir: '', done: false
+      }));
+    }else{
+      workoutState[currentDay][idx] = workoutState[currentDay][idx].map(s => ({
+        w: s.w, r: '', rir: '', done: false
+      }));
+    }
   });
   await setData(WORKOUT_KEY, workoutState);
 
